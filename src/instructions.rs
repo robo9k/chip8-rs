@@ -129,6 +129,10 @@ pub enum Instruction {
     ///
     /// `7xkk` - `ADD Vx, byte`
     AddOperand(Vx, Byte),
+    /// Loads `Vy` into `Vx`
+    ///
+    /// `8xy0` - `LD Vx, Vy`
+    Load(Vx, Vy),
 }
 
 impl Instruction {
@@ -168,6 +172,13 @@ impl Instruction {
             },
             0x6 => Some(LoadOperand(VRegister::from(x).unwrap(), kk)),
             0x7 => Some(AddOperand(VRegister::from(x).unwrap(), kk)),
+            0x8 => match low_nibble {
+                0x0 => Some(Load(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                _ => None,
+            },
 
             _ => None,
         }
@@ -249,6 +260,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x70FF),
             Some(Instruction::AddOperand(VRegister::V0, 0xFF))
+        );
+    }
+
+    #[test]
+    fn decode_load() {
+        assert_eq!(
+            Instruction::decode(0x8120),
+            Some(Instruction::Load(VRegister::V1, VRegister::V2))
         );
     }
 
