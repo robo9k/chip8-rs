@@ -149,6 +149,10 @@ pub enum Instruction {
     ///
     /// `8xy4` - `ADD Vx, Vy`
     Add(Vx, Vy),
+    /// Sets `Vx` to `Vx - Vy`, `VF` to not borrow
+    ///
+    /// `8xy5` - `SUB Vx, Vy`
+    Sub(Vx, Vy),
 }
 
 impl Instruction {
@@ -203,6 +207,10 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
                 0x4 => Some(Add(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                0x5 => Some(Sub(
                     VRegister::from(x).unwrap(),
                     VRegister::from(y).unwrap(),
                 )),
@@ -330,6 +338,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x8124),
             Some(Instruction::Add(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_sub() {
+        assert_eq!(
+            Instruction::decode(0x8125),
+            Some(Instruction::Sub(VRegister::V1, VRegister::V2))
         );
     }
 
