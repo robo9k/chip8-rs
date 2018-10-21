@@ -137,6 +137,10 @@ pub enum Instruction {
     ///
     /// `8xy1` - `OR Vx, Vy`
     Or(Vx, Vy),
+    /// Sets `Vx` to `Vx AND Vy`
+    ///
+    /// `8xy2` - `AND Vx, Vy`
+    And(Vx, Vy),
 }
 
 impl Instruction {
@@ -182,6 +186,10 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
                 0x1 => Some(Or(VRegister::from(x).unwrap(), VRegister::from(y).unwrap())),
+                0x2 => Some(And(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
                 _ => None,
             },
 
@@ -281,6 +289,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x8121),
             Some(Instruction::Or(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_and() {
+        assert_eq!(
+            Instruction::decode(0x8122),
+            Some(Instruction::And(VRegister::V1, VRegister::V2))
         );
     }
 
