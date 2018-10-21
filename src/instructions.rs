@@ -173,6 +173,10 @@ pub enum Instruction {
     ///
     /// `Annn` - `LD I, addr`
     LoadI(Addr),
+    /// Jumps to `Addr + V0`
+    ///
+    /// `Bnnn` - `JP V0, addr`
+    LongJump(Addr),
 }
 
 impl Instruction {
@@ -257,6 +261,7 @@ impl Instruction {
                 _ => None,
             },
             0xA => Some(LoadI(Addr(nnn))),
+            0xB => Some(LongJump(Addr(nnn))),
 
             _ => None,
         }
@@ -426,6 +431,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xA123),
             Some(Instruction::LoadI(Addr(0x123)))
+        );
+    }
+
+    #[test]
+    fn decode_long_jump() {
+        assert_eq!(
+            Instruction::decode(0xB123),
+            Some(Instruction::LongJump(Addr(0x123)))
         );
     }
 
