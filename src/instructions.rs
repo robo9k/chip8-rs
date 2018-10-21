@@ -153,6 +153,10 @@ pub enum Instruction {
     ///
     /// `8xy5` - `SUB Vx, Vy`
     Sub(Vx, Vy),
+    /// Sets `Vx` to `Vx SHR 1`
+    ///
+    /// `8xy6` - `SHR Vx {, Vy}`
+    ShiftRight(Vx, Vy),
 }
 
 impl Instruction {
@@ -211,6 +215,10 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
                 0x5 => Some(Sub(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                0x6 => Some(ShiftRight(
                     VRegister::from(x).unwrap(),
                     VRegister::from(y).unwrap(),
                 )),
@@ -346,6 +354,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x8125),
             Some(Instruction::Sub(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_shift_right() {
+        assert_eq!(
+            Instruction::decode(0x8126),
+            Some(Instruction::ShiftRight(VRegister::V1, VRegister::V2))
         );
     }
 
