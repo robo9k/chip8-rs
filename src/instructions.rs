@@ -161,6 +161,10 @@ pub enum Instruction {
     ///
     /// `8xy7` - `SUB Vx, Vy`
     SubNegated(Vx, Vy),
+    /// Sets `Vx` to `Vx SHL 1`
+    ///
+    /// `8xyE` - `SHL Vx {, Vy}`
+    ShiftLeft(Vx, Vy),
 }
 
 impl Instruction {
@@ -227,6 +231,10 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
                 0x7 => Some(SubNegated(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                0xE => Some(ShiftLeft(
                     VRegister::from(x).unwrap(),
                     VRegister::from(y).unwrap(),
                 )),
@@ -378,6 +386,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x8127),
             Some(Instruction::SubNegated(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_shift_left() {
+        assert_eq!(
+            Instruction::decode(0x812E),
+            Some(Instruction::ShiftLeft(VRegister::V1, VRegister::V2))
         );
     }
 
