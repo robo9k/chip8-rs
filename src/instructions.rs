@@ -113,6 +113,10 @@ pub enum Instruction {
     ///
     /// `3xkk` - `SE Vx, byte`
     SkipEqualOperand(Vx, Byte),
+    /// Skips next instruction if `Vx` is not equal to `byte`
+    ///
+    /// `4xkk` - `SNE Vx, byte`
+    SkipNotEqualOperand(Vx, Byte),
 }
 
 impl Instruction {
@@ -138,6 +142,7 @@ impl Instruction {
             0x1 => Some(Jump(Addr(nnn))),
             0x2 => Some(Call(Addr(nnn))),
             0x3 => Some(SkipEqualOperand(VRegister::from(x).unwrap(), kk)),
+            0x4 => Some(SkipNotEqualOperand(VRegister::from(x).unwrap(), kk)),
 
             _ => None,
         }
@@ -190,4 +195,11 @@ mod tests {
         );
     }
 
+    #[test]
+    fn decode_skip_not_equal_operand() {
+        assert_eq!(
+            Instruction::decode(0x40FF),
+            Some(Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF))
+        );
+    }
 }
