@@ -1,5 +1,79 @@
 //! Machine language and byte code instructions
 
+/// General purpose register
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum VRegister {
+    #[allow(missing_docs)]
+    V0 = 0x0,
+    #[allow(missing_docs)]
+    V1 = 0x1,
+    #[allow(missing_docs)]
+    V2 = 0x2,
+    #[allow(missing_docs)]
+    V3 = 0x3,
+    #[allow(missing_docs)]
+    V4 = 0x4,
+    #[allow(missing_docs)]
+    V5 = 0x5,
+    #[allow(missing_docs)]
+    V6 = 0x6,
+    #[allow(missing_docs)]
+    V7 = 0x7,
+    #[allow(missing_docs)]
+    V8 = 0x8,
+    #[allow(missing_docs)]
+    V9 = 0x9,
+    #[allow(missing_docs)]
+    VA = 0xA,
+    #[allow(missing_docs)]
+    VB = 0xB,
+    #[allow(missing_docs)]
+    VC = 0xC,
+    #[allow(missing_docs)]
+    VD = 0xD,
+    #[allow(missing_docs)]
+    VE = 0xE,
+    #[allow(missing_docs)]
+    VF = 0xF,
+}
+
+impl VRegister {
+    /// Matches `bits` to an `VRegister`
+    pub fn from(bits: u8) -> Option<VRegister> {
+        use self::VRegister::*;
+
+        match bits {
+            0x0 => Some(V0),
+            0x1 => Some(V1),
+            0x2 => Some(V2),
+            0x3 => Some(V3),
+            0x4 => Some(V4),
+            0x5 => Some(V5),
+            0x6 => Some(V6),
+            0x7 => Some(V7),
+            0x8 => Some(V8),
+            0x9 => Some(V9),
+            0xA => Some(VA),
+            0xB => Some(VB),
+            0xC => Some(VC),
+            0xD => Some(VD),
+            0xE => Some(VE),
+            0xF => Some(VF),
+
+            _ => None,
+        }
+    }
+}
+
+/// First register in an instruction
+pub type Vx = VRegister;
+
+/// Second register in an instruction
+pub type Vy = VRegister;
+
+/// A byte
+pub type Byte = u8;
+
 /// Absolute memory address
 ///
 /// Valid addresses are within `0x0` .. `0xFFF`.
@@ -35,6 +109,10 @@ pub enum Instruction {
     ///
     /// `2nnn` - `CALL addr`
     Call(Addr),
+    /// Skips next instruction if `Vx` equals `byte`
+    ///
+    /// `3xkk` - `SE Vx, byte`
+    SkipEqualOperand(Vx, Byte),
 }
 
 impl Instruction {
@@ -42,18 +120,24 @@ impl Instruction {
     pub fn decode(bits: u16) -> Option<Instruction> {
         use self::Instruction::*;
 
-        let nnn = bits & 0x0FFF;
-        let high_nibble = (bits & 0xF000) >> 12;
-        let k = bits & 0x00FF;
+        // lowest 12 bits
+        let nnn = (bits & 0x0FFF) as u16;
+        // highest 4 bits of high byte
+        let high_nibble = ((bits & 0xF000) >> 12) as u8;
+        // lower 4 bits of high byte
+        let x = ((bits & 0x0F00) >> 8) as u8;
+        // lower 8 bits
+        let kk = (bits & 0x00FF) as u8;
 
         match high_nibble {
-            0x0 => match k {
+            0x0 => match kk {
                 0xE0 => Some(Clear),
                 0xEE => Some(Return),
                 _ => Some(Sys(Addr(nnn))),
             },
             0x1 => Some(Jump(Addr(nnn))),
             0x2 => Some(Call(Addr(nnn))),
+            0x3 => Some(SkipEqualOperand(VRegister::from(x).unwrap(), kk)),
 
             _ => None,
         }
@@ -97,4 +181,13 @@ mod tests {
             Some(Instruction::Call(Addr(0x0345)))
         );
     }
+
+    #[test]
+    fn decode_skip_equal_operand() {
+        assert_eq!(
+            Instruction::decode(0x30FF),
+            Some(Instruction::SkipEqualOperand(VRegister::V0, 0xFF))
+        );
+    }
+
 }
