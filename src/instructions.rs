@@ -27,6 +27,10 @@ pub enum Instruction {
     ///
     /// `00EE` - `RET`
     Return,
+    /// Jumps to `Addr`
+    ///
+    /// `1nnn` - `JP addr`
+    Jump(Addr),
 }
 
 impl Instruction {
@@ -44,6 +48,8 @@ impl Instruction {
                 0xEE => Some(Return),
                 _ => Some(Sys(Addr(nnn))),
             },
+            0x1 => Some(Jump(Addr(nnn))),
+
             _ => None,
         }
     }
@@ -62,6 +68,7 @@ mod tests {
     fn decode_return() {
         assert_eq!(Instruction::decode(0x00EE), Some(Instruction::Return));
     }
+
     #[test]
     fn decode_sys() {
         assert_eq!(
@@ -69,4 +76,13 @@ mod tests {
             Some(Instruction::Sys(Addr(0x0123)))
         );
     }
+
+    #[test]
+    fn decode_jump() {
+        assert_eq!(
+            Instruction::decode(0x1234),
+            Some(Instruction::Jump(Addr(0x0234)))
+        );
+    }
+
 }
