@@ -125,6 +125,10 @@ pub enum Instruction {
     ///
     /// `6xkk` - `LD Vx, byte`
     LoadOperand(Vx, Byte),
+    /// Adds `byte` to `Vx`, then stores it in `Vx`
+    ///
+    /// `7xkk` - `ADD Vx, byte`
+    AddOperand(Vx, Byte),
 }
 
 impl Instruction {
@@ -163,6 +167,7 @@ impl Instruction {
                 _ => None,
             },
             0x6 => Some(LoadOperand(VRegister::from(x).unwrap(), kk)),
+            0x7 => Some(AddOperand(VRegister::from(x).unwrap(), kk)),
 
             _ => None,
         }
@@ -236,6 +241,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x60FF),
             Some(Instruction::LoadOperand(VRegister::V0, 0xFF))
+        );
+    }
+
+    #[test]
+    fn decode_add_operand() {
+        assert_eq!(
+            Instruction::decode(0x70FF),
+            Some(Instruction::AddOperand(VRegister::V0, 0xFF))
         );
     }
 
