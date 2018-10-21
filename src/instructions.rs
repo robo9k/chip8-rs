@@ -31,6 +31,10 @@ pub enum Instruction {
     ///
     /// `1nnn` - `JP addr`
     Jump(Addr),
+    /// Calls subroutine at `Addr`
+    ///
+    /// `2nnn` - `CALL addr`
+    Call(Addr),
 }
 
 impl Instruction {
@@ -49,6 +53,7 @@ impl Instruction {
                 _ => Some(Sys(Addr(nnn))),
             },
             0x1 => Some(Jump(Addr(nnn))),
+            0x2 => Some(Call(Addr(nnn))),
 
             _ => None,
         }
@@ -85,4 +90,11 @@ mod tests {
         );
     }
 
+    #[test]
+    fn decode_call() {
+        assert_eq!(
+            Instruction::decode(0x2345),
+            Some(Instruction::Call(Addr(0x0345)))
+        );
+    }
 }
