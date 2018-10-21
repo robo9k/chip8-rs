@@ -7,6 +7,10 @@ pub enum Instruction {
     ///
     /// `00E0` - `CLS`
     Clear,
+    /// Returns from a subroutine
+    ///
+    /// `00EE` - `RET`
+    Return,
 }
 
 impl Instruction {
@@ -20,6 +24,7 @@ impl Instruction {
         match high_nibble {
             0x0 => match k {
                 0xE0 => Some(Clear),
+                0xEE => Some(Return),
                 _ => None,
             },
             _ => None,
@@ -35,4 +40,10 @@ mod tests {
     fn decode_clear() {
         assert_eq!(Instruction::decode(0x00E0), Some(Instruction::Clear));
     }
+
+    #[test]
+    fn decode_return() {
+        assert_eq!(Instruction::decode(0x00EE), Some(Instruction::Return));
+    }
+
 }
