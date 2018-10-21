@@ -169,6 +169,10 @@ pub enum Instruction {
     ///
     /// `9xy0` - `SNE Vx, Vy`
     SkipNotEqual(Vx, Vy),
+    /// Loads `Addr` into register `I`
+    ///
+    /// `Annn` - `LD I, addr`
+    LoadI(Addr),
 }
 
 impl Instruction {
@@ -252,6 +256,7 @@ impl Instruction {
                 )),
                 _ => None,
             },
+            0xA => Some(LoadI(Addr(nnn))),
 
             _ => None,
         }
@@ -413,6 +418,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x9120),
             Some(Instruction::SkipNotEqual(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_load_i() {
+        assert_eq!(
+            Instruction::decode(0xA123),
+            Some(Instruction::LoadI(Addr(0x123)))
         );
     }
 
