@@ -117,6 +117,10 @@ pub enum Instruction {
     ///
     /// `4xkk` - `SNE Vx, byte`
     SkipNotEqualOperand(Vx, Byte),
+    /// Skips next instruction if `Vy` is equal to `Vy`
+    ///
+    /// `5xy0` - `SE Vx, Vy`
+    SkipEqual(Vx, Vy),
 }
 
 impl Instruction {
@@ -128,8 +132,12 @@ impl Instruction {
         let nnn = (bits & 0x0FFF) as u16;
         // highest 4 bits of high byte
         let high_nibble = ((bits & 0xF000) >> 12) as u8;
+        // lowest 4 bits of low byte
+        let low_nibble = (bits & 0x000F) as u8;
         // lower 4 bits of high byte
         let x = ((bits & 0x0F00) >> 8) as u8;
+        // higher 4 bits of lower byte
+        let y = ((bits & 0x00F0) >> 4) as u8;
         // lower 8 bits
         let kk = (bits & 0x00FF) as u8;
 
@@ -143,6 +151,13 @@ impl Instruction {
             0x2 => Some(Call(Addr(nnn))),
             0x3 => Some(SkipEqualOperand(VRegister::from(x).unwrap(), kk)),
             0x4 => Some(SkipNotEqualOperand(VRegister::from(x).unwrap(), kk)),
+            0x5 => match low_nibble {
+                0x0 => Some(SkipEqual(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                _ => None,
+            },
 
             _ => None,
         }
@@ -202,4 +217,13 @@ mod tests {
             Some(Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF))
         );
     }
+
+    #[test]
+    fn decode_skip_equal() {
+        assert_eq!(
+            Instruction::decode(0x50F0),
+            Some(Instruction::SkipEqual(VRegister::V0, VRegister::VF))
+        );
+    }
+
 }
