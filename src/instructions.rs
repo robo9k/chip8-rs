@@ -157,6 +157,10 @@ pub enum Instruction {
     ///
     /// `8xy6` - `SHR Vx {, Vy}`
     ShiftRight(Vx, Vy),
+    /// Sets `Vx` to `Vy - Vx`, `VF` to not borrow
+    ///
+    /// `8xy7` - `SUB Vx, Vy`
+    SubNegated(Vx, Vy),
 }
 
 impl Instruction {
@@ -219,6 +223,10 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
                 0x6 => Some(ShiftRight(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
+                0x7 => Some(SubNegated(
                     VRegister::from(x).unwrap(),
                     VRegister::from(y).unwrap(),
                 )),
@@ -362,6 +370,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x8126),
             Some(Instruction::ShiftRight(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_sub_negated() {
+        assert_eq!(
+            Instruction::decode(0x8127),
+            Some(Instruction::SubNegated(VRegister::V1, VRegister::V2))
         );
     }
 
