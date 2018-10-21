@@ -1,3 +1,7 @@
+//! Virtual machine for the CHIP-8 programming language
+
+#![warn(missing_docs)]
+
 #[cfg(test)]
 mod tests {
     #[test]
