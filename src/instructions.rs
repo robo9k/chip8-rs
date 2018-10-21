@@ -121,6 +121,10 @@ pub enum Instruction {
     ///
     /// `5xy0` - `SE Vx, Vy`
     SkipEqual(Vx, Vy),
+    /// Loads `byte` into `Vx`
+    ///
+    /// `6xkk` - `LD Vx, byte`
+    LoadOperand(Vx, Byte),
 }
 
 impl Instruction {
@@ -158,6 +162,7 @@ impl Instruction {
                 )),
                 _ => None,
             },
+            0x6 => Some(LoadOperand(VRegister::from(x).unwrap(), kk)),
 
             _ => None,
         }
@@ -223,6 +228,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x50F0),
             Some(Instruction::SkipEqual(VRegister::V0, VRegister::VF))
+        );
+    }
+
+    #[test]
+    fn decode_load_operand() {
+        assert_eq!(
+            Instruction::decode(0x60FF),
+            Some(Instruction::LoadOperand(VRegister::V0, 0xFF))
         );
     }
 
