@@ -165,6 +165,10 @@ pub enum Instruction {
     ///
     /// `8xyE` - `SHL Vx {, Vy}`
     ShiftLeft(Vx, Vy),
+    /// Skips next instruction if `Vx` is not equal to `Vy`
+    ///
+    /// `9xy0` - `SNE Vx, Vy`
+    SkipNotEqual(Vx, Vy),
 }
 
 impl Instruction {
@@ -239,6 +243,13 @@ impl Instruction {
                     VRegister::from(y).unwrap(),
                 )),
 
+                _ => None,
+            },
+            0x9 => match low_nibble {
+                0x0 => Some(SkipNotEqual(
+                    VRegister::from(x).unwrap(),
+                    VRegister::from(y).unwrap(),
+                )),
                 _ => None,
             },
 
@@ -394,6 +405,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0x812E),
             Some(Instruction::ShiftLeft(VRegister::V1, VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_skip_not_equal() {
+        assert_eq!(
+            Instruction::decode(0x9120),
+            Some(Instruction::SkipNotEqual(VRegister::V1, VRegister::V2))
         );
     }
 
