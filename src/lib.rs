@@ -2,6 +2,8 @@
 
 #![warn(missing_docs)]
 
+pub mod instructions;
+
 #[cfg(test)]
 mod tests {
     #[test]
