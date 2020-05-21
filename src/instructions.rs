@@ -203,11 +203,11 @@ pub enum Instruction {
     /// Skip next instruction if key `Vx` is pressed
     ///
     /// `Ex9E` - `SKP Vx`
-    SkipPressed(Vx),
+    SkipKeyPressed(Vx),
     /// Skip next instruction if key `Vx` is not pressed
     ///
     /// `ExA1` - `SKNP Vx`
-    SkipNotPressed(Vx),
+    SkipKeyNotPressed(Vx),
     /// Set `Vx` to delay timer value
     ///
     /// `Fx07` - `LD Vx, DT`
@@ -308,6 +308,11 @@ impl Instruction {
                 VRegister::try_from(y)?,
                 Nibble::from(low_nibble),
             )),
+            0xE => match kk {
+                0x9E => Ok(Instruction::SkipKeyPressed(VRegister::try_from(x)?)),
+                0xA1 => Ok(Instruction::SkipKeyNotPressed(VRegister::try_from(x)?)),
+                _ => Err(Chip8Error::UnknownInstruction(bits)),
+            },
 
             _ => Err(Chip8Error::UnknownInstruction(bits)),
         }
@@ -514,6 +519,22 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xD0FA),
             Ok(Instruction::Draw(VRegister::V0, VRegister::VF, 0xA.into()))
+        );
+    }
+
+    #[test]
+    fn decode_skipkeypressed() {
+        assert_eq!(
+            Instruction::decode(0xE19E),
+            Ok(Instruction::SkipKeyPressed(VRegister::V1))
+        );
+    }
+
+    #[test]
+    fn decode_skipkeynotpressed() {
+        assert_eq!(
+            Instruction::decode(0xE1A1),
+            Ok(Instruction::SkipKeyNotPressed(VRegister::V1))
         );
     }
 }
