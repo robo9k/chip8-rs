@@ -1,8 +1,11 @@
 [package]
-name = "chip8"
+name = "chip_8"
 version = "0.1.0"
 authors = ["robo9k <robo@9k.lv>"]
 edition = "2018"
+description = "CHIP-8"
+repository = "https://github.com/robo9k/chip8-rs"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 thiserror = "1.0.18"
