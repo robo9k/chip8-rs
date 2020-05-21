@@ -118,6 +118,9 @@ impl VM {
                 self.registers[vx] = res as VRegisterValue;
             }
             Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
+            Instruction::AddOperand(vx, byte) => {
+                self.registers[vx] = self.registers[vx].wrapping_add(byte)
+            }
             Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
@@ -204,6 +207,24 @@ mod tests {
             instruction: LoadOperand(V2, 0xFF),
             registers_before: {V2 => 0xEE},
             registers_after: {V2 => 0xFF},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_add_operand {
+            instruction: AddOperand(V2, 0xFF),
+            registers_before: {V2 => 0x00},
+            registers_after: {V2 => 0xFF},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_add_operand_wrapping {
+            instruction: AddOperand(V2, 0x01),
+            registers_before: {V2 => 0xFF},
+            registers_after: {V2 => 0x00},
             register_overflow: 0,
         }
     );
