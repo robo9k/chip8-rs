@@ -84,8 +84,8 @@ pub type Byte = u8;
 pub struct Addr(u16);
 
 impl From<u16> for Addr {
-    fn from(bits: u16) -> Addr {
-        Addr(bits & 0x0FFF)
+    fn from(bits: u16) -> Self {
+        Self(bits & 0x0FFF)
     }
 }
 
@@ -248,7 +248,12 @@ pub enum Instruction {
 
 impl Instruction {
     /// Decodes raw `bits` into a valid `Instruction`
-    pub fn decode(bits: u16) -> crate::errors::Result<Instruction> {
+    ///
+    /// # Errors
+    ///
+    /// Will return [`Chip8Error::UnknownInstruction`](crate::errors::Chip8Error::UnknownInstruction)
+    /// if given `bits` don't match any known instruction.
+    pub fn decode(bits: u16) -> crate::errors::Result<Self> {
         use self::Instruction::*;
 
         // lowest 12 bits
@@ -309,20 +314,20 @@ impl Instruction {
                 Nibble::from(low_nibble),
             )),
             0xE => match kk {
-                0x9E => Ok(Instruction::SkipKeyPressed(VRegister::try_from(x)?)),
-                0xA1 => Ok(Instruction::SkipKeyNotPressed(VRegister::try_from(x)?)),
+                0x9E => Ok(SkipKeyPressed(VRegister::try_from(x)?)),
+                0xA1 => Ok(SkipKeyNotPressed(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
             0xF => match kk {
-                0x07 => Ok(Instruction::LoadRegisterDelayTimer(VRegister::try_from(x)?)),
-                0x0A => Ok(Instruction::LoadKey(VRegister::try_from(x)?)),
-                0x15 => Ok(Instruction::LoadDelayTimerRegister(VRegister::try_from(x)?)),
-                0x18 => Ok(Instruction::LoadSoundTimerRegister(VRegister::try_from(x)?)),
-                0x1E => Ok(Instruction::AddI(VRegister::try_from(x)?)),
-                0x29 => Ok(Instruction::LoadSprite(VRegister::try_from(x)?)),
-                0x33 => Ok(Instruction::LoadBinaryCodedDecimal(VRegister::try_from(x)?)),
-                0x55 => Ok(Instruction::LoadMemoryRegisters(VRegister::try_from(x)?)),
-                0x65 => Ok(Instruction::LoadRegistersMemory(VRegister::try_from(x)?)),
+                0x07 => Ok(LoadRegisterDelayTimer(VRegister::try_from(x)?)),
+                0x0A => Ok(LoadKey(VRegister::try_from(x)?)),
+                0x15 => Ok(LoadDelayTimerRegister(VRegister::try_from(x)?)),
+                0x18 => Ok(LoadSoundTimerRegister(VRegister::try_from(x)?)),
+                0x1E => Ok(AddI(VRegister::try_from(x)?)),
+                0x29 => Ok(LoadSprite(VRegister::try_from(x)?)),
+                0x33 => Ok(LoadBinaryCodedDecimal(VRegister::try_from(x)?)),
+                0x55 => Ok(LoadMemoryRegisters(VRegister::try_from(x)?)),
+                0x65 => Ok(LoadRegistersMemory(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
 
