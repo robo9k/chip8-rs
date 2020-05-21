@@ -441,5 +441,4 @@ mod tests {
             Some(Instruction::LongJump(Addr(0x123)))
         );
     }
-
 }

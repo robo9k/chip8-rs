@@ -3,6 +3,7 @@
 #![warn(missing_docs)]
 
 pub mod instructions;
+pub mod vm;
 
 #[cfg(test)]
 mod tests {
