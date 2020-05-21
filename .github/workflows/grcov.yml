@@ -1,0 +1,80 @@
+name: coverage
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  grcov:
+    name: coverage
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          # We don't have branches on OS currently
+          # - macOS-latest
+          # - windows-latest
+        toolchain:
+          - nightly
+        cargo_flags:
+          - "--all-features"
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v2
+
+      - name: install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+
+      - name: pre-installing grcov
+        uses: actions-rs/install@v0.1
+        with:
+          crate: grcov
+          use-tool-cache: true
+
+      - name: test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all --no-fail-fast ${{ matrix.cargo_flags }}
+        env:
+          CARGO_INCREMENTAL: "0"
+          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off"
+
+      - name: generate coverage data
+        id: grcov
+        # uses: actions-rs/grcov@v0.1
+        run: |
+          grcov target/debug/ \
+              --branch \
+              --llvm \
+              --source-dir . \
+              --output-file lcov.info \
+              --ignore='/**' \
+              --ignore='C:/**' \
+              --ignore='../**' \
+              --ignore-not-existing \
+              --commit-sha ${{ github.sha }} \
+              --service-job-id ${{ github.job }} \
+              --service-name "GitHub Actions" \
+              --service-number ${{ github.run_id }}
+
+      - name: upload coverage as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: lcov.info
+          # path: ${{ steps.grcov.outputs.report }}
+          path: lcov.info
+
+      - name: upload coverage to codecov.io
+        uses: codecov/codecov-action@v1
+        with:
+          # file: ${{ steps.grcov.outputs.report }}
+          file: lcov.info
+          fail_ci_if_error: true
