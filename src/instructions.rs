@@ -89,6 +89,18 @@ impl From<u16> for Addr {
     }
 }
 
+/// Hex digit
+///
+/// Valid values are within `0x0` .. `0xF`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Nibble(u8);
+
+impl From<u8> for Nibble {
+    fn from(bits: u8) -> Self {
+        Self(bits & 0xF)
+    }
+}
+
 /// Byte code instruction
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Instruction {
@@ -180,6 +192,58 @@ pub enum Instruction {
     ///
     /// `Bnnn` - `JP V0, addr`
     LongJump(Addr),
+    /// Sets `Vx` to random number AND `kk`
+    ///
+    /// `Cxkk` - `RND Vx, byte`
+    Random(Vx, Byte),
+    /// Read `n` bytes of memory from address `I`, draw it at `Vx` and `Vy` screen coordinates and set `VF` for erased pixels
+    ///
+    /// `Dxyn` - `DRW Vx, Vy, nibble`
+    Draw(Vx, Vy, Nibble),
+    /// Skip next instruction if key `Vx` is pressed
+    ///
+    /// `Ex9E` - `SKP Vx`
+    SkipPressed(/* TODO */),
+    /// Skip next instruction if key `Vx` is not pressed
+    ///
+    /// `ExA1` - `SKNP Vx`
+    SkipNotPressed(/* TODO */),
+    /// Set `Vx` to delay timer value
+    ///
+    /// `Fx07` - `LD Vx, DT`
+    LoadRegisterDelayTimer(Vx),
+    /// Wait for key press and store it in `Vx`
+    ///
+    /// `Fx0A` - `LD Vx, K`
+    LoadKey(Vx /* TODO */),
+    /// Set delay timer to `Vx`
+    ///
+    /// `Fx15` - `LD DT, Vx`
+    LoadDelayTimerRegister(Vx),
+    /// Set sound timer to `Vx`
+    ///
+    /// `Fx18` - `LD ST, Vx`
+    LoadSoundTimerRegister(Vx),
+    /// Add `Vx` to `I`
+    ///
+    /// `Fx1E` - `ADD I, Vx`
+    AddI(Vx),
+    /// Set `I` to the address of the sprite `Vx`
+    ///
+    /// `Fx29` - `LD F, Vx`
+    LoadSprite(Vx),
+    /// Store binary-coded decimal (BCD) at `I`, `I`+1 and `I`+2
+    ///
+    /// `Fx33` - `LD B, Vx`
+    LoadBinaryCodedDecimal(Vx),
+    /// Store registers `V0`..`Vx` in memory at `I`
+    ///
+    /// `Fx55` - `LD [I], Vx`
+    LoadMemoryRegisters(Vx),
+    /// Read registers `V0`..`Vx` from memory at `I`
+    ///
+    /// `Fx65` - `LD Vx, [I]`
+    LoadRegistersMemory(Vx),
 }
 
 impl Instruction {
