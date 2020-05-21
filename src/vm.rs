@@ -122,6 +122,7 @@ impl VM {
                 self.registers[vx] = self.registers[vx].wrapping_add(byte)
             }
             Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
+            Instruction::Or(vx, vy) => self.registers[vx] |= self.registers[vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -234,6 +235,15 @@ mod tests {
             instruction: Load(V2, V3),
             registers_before: {V2 => 0x00, V3 => 0xFF},
             registers_after: {V2 => 0xFF, V3 => 0xFF},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_or {
+            instruction: Or(V2, V3),
+            registers_before: {V2 => 0x01, V3 => 0x10},
+            registers_after: {V2 => 0x11},
             register_overflow: 0,
         }
     );
