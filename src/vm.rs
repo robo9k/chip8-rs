@@ -104,10 +104,10 @@ impl VM {
     }
 
     fn execute_instruction(&mut self, instruction: &Instruction) {
-        match instruction {
+        match *instruction {
             Instruction::Add(vx, vy) => {
-                let x = self.registers[*vx] as u16;
-                let y = self.registers[*vy] as u16;
+                let x = self.registers[vx] as u16;
+                let y = self.registers[vy] as u16;
 
                 let res = x + y;
 
@@ -115,10 +115,10 @@ impl VM {
                 self.registers[VRegister::VF] =
                     (res > VRegisterValue::MAX as u16) as VRegisterValue;
 
-                self.registers[*vx] = res as VRegisterValue;
+                self.registers[vx] = res as VRegisterValue;
             }
-            Instruction::LoadOperand(vx, byte) => self.registers[*vx] = *byte,
-            Instruction::Load(vx, vy) => self.registers[*vx] = self.registers[*vy],
+            Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
+            Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
