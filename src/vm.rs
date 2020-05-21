@@ -117,6 +117,7 @@ impl VM {
 
                 self.registers[*vx] = res as VRegisterValue;
             }
+            Instruction::LoadOperand(vx, byte) => self.registers[*vx] = *byte,
             Instruction::Load(vx, vy) => self.registers[*vx] = self.registers[*vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
@@ -195,6 +196,15 @@ mod tests {
             registers_before: {V2 => 0xFF, V3 => 0x01},
             registers_after: {V2 => 0x00, V3 => 0x01},
             register_overflow: 1,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_load_operand {
+            instruction: LoadOperand(V2, 0xFF),
+            registers_before: {V2 => 0xEE},
+            registers_after: {V2 => 0xFF},
+            register_overflow: 0,
         }
     );
 
