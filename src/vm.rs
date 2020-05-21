@@ -124,6 +124,19 @@ impl VM {
             // SkipNotEqual(Vx, Vy),
             // LoadI(Addr),
             // LongJump(Addr)
+            // Random(Vx, Byte)
+            // Draw(Vx, Vy, Nibble)
+            // SkipKeyPressed(Vx)
+            // SkipKeyNotPressed(Vx)
+            // LoadRegisterDelayTimer(Vx)
+            // LoadKey(Vx)
+            // LoadDelayTimerRegister(Vx)
+            // LoadSoundTimerRegister(Vx)
+            // AddI(Vx)
+            // LoadSprite(Vx)
+            // LoadBinaryCodedDecimal(Vx)
+            // LoadMemoryRegisters(Vx)
+            // LoadRegistersMemory(Vx)
             other => panic!("Unimplemented instruction: {:?}", other),
         }
     }
