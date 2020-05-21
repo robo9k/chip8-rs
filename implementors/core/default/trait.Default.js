@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["chip8"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"chip8/vm/struct.VRegisters.html\" title=\"struct chip8::vm::VRegisters\">VRegisters</a>","synthetic":false,"types":["chip8::vm::VRegisters"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
