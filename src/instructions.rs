@@ -268,10 +268,10 @@ impl Instruction {
             0x0 => match kk {
                 0xE0 => Ok(Clear),
                 0xEE => Ok(Return),
-                _ => Ok(Sys(Addr(nnn))),
+                _ => Ok(Sys(nnn.into())),
             },
-            0x1 => Ok(Jump(Addr(nnn))),
-            0x2 => Ok(Call(Addr(nnn))),
+            0x1 => Ok(Jump(nnn.into())),
+            0x2 => Ok(Call(nnn.into())),
             0x3 => Ok(SkipEqualOperand(VRegister::try_from(x)?, kk)),
             0x4 => Ok(SkipNotEqualOperand(VRegister::try_from(x)?, kk)),
             0x5 => match low_nibble {
@@ -300,8 +300,8 @@ impl Instruction {
                 )),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
-            0xA => Ok(LoadI(Addr(nnn))),
-            0xB => Ok(LongJump(Addr(nnn))),
+            0xA => Ok(LoadI(nnn.into())),
+            0xB => Ok(LongJump(nnn.into())),
             0xC => Ok(Random(VRegister::try_from(x)?, kk)),
             0xD => Ok(Draw(
                 VRegister::try_from(x)?,
@@ -345,7 +345,7 @@ mod tests {
     fn decode_sys() {
         assert_eq!(
             Instruction::decode(0x0123),
-            Ok(Instruction::Sys(Addr(0x0123)))
+            Ok(Instruction::Sys(0x0123.into()))
         );
     }
 
@@ -353,7 +353,7 @@ mod tests {
     fn decode_jump() {
         assert_eq!(
             Instruction::decode(0x1234),
-            Ok(Instruction::Jump(Addr(0x0234)))
+            Ok(Instruction::Jump(0x0234.into()))
         );
     }
 
@@ -361,7 +361,7 @@ mod tests {
     fn decode_call() {
         assert_eq!(
             Instruction::decode(0x2345),
-            Ok(Instruction::Call(Addr(0x0345)))
+            Ok(Instruction::Call(0x0345.into()))
         );
     }
 
@@ -489,7 +489,7 @@ mod tests {
     fn decode_load_i() {
         assert_eq!(
             Instruction::decode(0xA123),
-            Ok(Instruction::LoadI(Addr(0x123)))
+            Ok(Instruction::LoadI(0x123.into()))
         );
     }
 
@@ -497,7 +497,7 @@ mod tests {
     fn decode_long_jump() {
         assert_eq!(
             Instruction::decode(0xB123),
-            Ok(Instruction::LongJump(Addr(0x123)))
+            Ok(Instruction::LongJump(0x123.into()))
         );
     }
 
