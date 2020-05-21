@@ -418,33 +418,11 @@
 <span id="418">418</span>
 <span id="419">419</span>
 <span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
-<span id="423">423</span>
-<span id="424">424</span>
-<span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
-<span id="431">431</span>
-<span id="432">432</span>
-<span id="433">433</span>
-<span id="434">434</span>
-<span id="435">435</span>
-<span id="436">436</span>
-<span id="437">437</span>
-<span id="438">438</span>
-<span id="439">439</span>
-<span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Machine language and byte code instructions</span>
+
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="ident">Chip8Error</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 
 <span class="doccomment">/// General purpose register</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
@@ -484,30 +462,29 @@
     <span class="ident">VF</span> <span class="op">=</span> <span class="number">0xF</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">VRegister</span> {
-    <span class="doccomment">/// Matches `bits` to an `VRegister`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">bits</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VRegister</span><span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">VRegister</span>::<span class="kw-2">*</span>;
+<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">VRegister</span> {
+    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Chip8Error</span>;
 
-        <span class="kw">match</span> <span class="ident">bits</span> {
-            <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V0</span>),
-            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V1</span>),
-            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V2</span>),
-            <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V3</span>),
-            <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V4</span>),
-            <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V5</span>),
-            <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V6</span>),
-            <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V7</span>),
-            <span class="number">0x8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V8</span>),
-            <span class="number">0x9</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">V9</span>),
-            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VA</span>),
-            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VB</span>),
-            <span class="number">0xC</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VC</span>),
-            <span class="number">0xD</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VD</span>),
-            <span class="number">0xE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VE</span>),
-            <span class="number">0xF</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">VF</span>),
+    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">value</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">value</span> {
+            <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V0</span>),
+            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V1</span>),
+            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V2</span>),
+            <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V3</span>),
+            <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V4</span>),
+            <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V5</span>),
+            <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V6</span>),
+            <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V7</span>),
+            <span class="number">0x8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V8</span>),
+            <span class="number">0x9</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">V9</span>),
+            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VA</span>),
+            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VB</span>),
+            <span class="number">0xC</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VC</span>),
+            <span class="number">0xD</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VD</span>),
+            <span class="number">0xE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VE</span>),
+            <span class="number">0xF</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="ident">VF</span>),
 
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">InvalidRegister</span>(<span class="ident">value</span>)),
         }
     }
 }
@@ -628,7 +605,7 @@
 
 <span class="kw">impl</span> <span class="ident">Instruction</span> {
     <span class="doccomment">/// Decodes raw `bits` into a valid `Instruction`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode</span>(<span class="ident">bits</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode</span>(<span class="ident">bits</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Instruction</span>::<span class="kw-2">*</span>;
 
         <span class="comment">// lowest 12 bits</span>
@@ -646,71 +623,44 @@
 
         <span class="kw">match</span> <span class="ident">high_nibble</span> {
             <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">kk</span> {
-                <span class="number">0xE0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Clear</span>),
-                <span class="number">0xEE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Return</span>),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+                <span class="number">0xE0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Clear</span>),
+                <span class="number">0xEE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Return</span>),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
             },
-            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
-            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
-            <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">SkipEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(), <span class="ident">kk</span>)),
-            <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">SkipNotEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(), <span class="ident">kk</span>)),
+            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
+            <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipNotEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
             <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">low_nibble</span> {
-                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">SkipEqual</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipEqual</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">UnknownInstruction</span>(<span class="ident">bits</span>)),
             },
-            <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">LoadOperand</span>(<span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(), <span class="ident">kk</span>)),
-            <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">AddOperand</span>(<span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(), <span class="ident">kk</span>)),
+            <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LoadOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
+            <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">AddOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
             <span class="number">0x8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">low_nibble</span> {
-                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Load</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Or</span>(<span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(), <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>())),
-                <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">And</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">XOr</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Add</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Sub</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ShiftRight</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">SubNegated</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
-                <span class="number">0xE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ShiftLeft</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
-                )),
+                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Load</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Or</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">And</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">XOr</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Add</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Sub</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ShiftRight</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0x7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SubNegated</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
+                <span class="number">0xE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ShiftLeft</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>)),
 
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">UnknownInstruction</span>(<span class="ident">bits</span>)),
             },
             <span class="number">0x9</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">low_nibble</span> {
-                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">SkipNotEqual</span>(
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">VRegister</span>::<span class="ident">from</span>(<span class="ident">y</span>).<span class="ident">unwrap</span>(),
+                <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipNotEqual</span>(
+                    <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>,
+                    <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">y</span>)<span class="question-mark">?</span>,
                 )),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">UnknownInstruction</span>(<span class="ident">bits</span>)),
             },
-            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
-            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
 
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">UnknownInstruction</span>(<span class="ident">bits</span>)),
         }
     }
 }
@@ -721,171 +671,171 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_clear</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x00E0</span>), <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Clear</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x00E0</span>).<span class="ident">unwrap</span>(), <span class="ident">Instruction</span>::<span class="ident">Clear</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_return</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x00EE</span>), <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Return</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x00EE</span>).<span class="ident">unwrap</span>(), <span class="ident">Instruction</span>::<span class="ident">Return</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_sys</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x0123</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="number">0x0123</span>)))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x0123</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="number">0x0123</span>))
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_jump</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x1234</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="number">0x0234</span>)))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x1234</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="number">0x0234</span>))
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_call</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x2345</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="number">0x0345</span>)))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x2345</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="number">0x0345</span>))
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_skip_equal_operand</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x30FF</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">SkipEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x30FF</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">SkipEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_skip_not_equal_operand</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x40FF</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">SkipNotEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x40FF</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">SkipNotEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_skip_equal</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x50F0</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">SkipEqual</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="ident">VRegister</span>::<span class="ident">VF</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x50F0</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">SkipEqual</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="ident">VRegister</span>::<span class="ident">VF</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_load_operand</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x60FF</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">LoadOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x60FF</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">LoadOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_add_operand</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x70FF</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">AddOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x70FF</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">AddOperand</span>(<span class="ident">VRegister</span>::<span class="ident">V0</span>, <span class="number">0xFF</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_load</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8120</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Load</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8120</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Load</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_or</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8121</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Or</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8121</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Or</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_and</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8122</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">And</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8122</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">And</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_xor</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8123</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">XOr</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8123</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">XOr</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_add</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8124</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Add</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8124</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Add</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_sub</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8125</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">Sub</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8125</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">Sub</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_shift_right</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8126</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">ShiftRight</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8126</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">ShiftRight</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_sub_negated</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8127</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">SubNegated</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x8127</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">SubNegated</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_shift_left</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x812E</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">ShiftLeft</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x812E</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">ShiftLeft</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_skip_not_equal</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x9120</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">SkipNotEqual</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x9120</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">SkipNotEqual</span>(<span class="ident">VRegister</span>::<span class="ident">V1</span>, <span class="ident">VRegister</span>::<span class="ident">V2</span>)
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_load_i</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xA123</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>)))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xA123</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>))
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">decode_long_jump</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xB123</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Instruction</span>::<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>)))
+            <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xB123</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">Instruction</span>::<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>))
         );
     }
 }
