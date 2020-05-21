@@ -203,11 +203,11 @@ pub enum Instruction {
     /// Skip next instruction if key `Vx` is pressed
     ///
     /// `Ex9E` - `SKP Vx`
-    SkipPressed(/* TODO */),
+    SkipPressed(Vx),
     /// Skip next instruction if key `Vx` is not pressed
     ///
     /// `ExA1` - `SKNP Vx`
-    SkipNotPressed(/* TODO */),
+    SkipNotPressed(Vx),
     /// Set `Vx` to delay timer value
     ///
     /// `Fx07` - `LD Vx, DT`
@@ -215,7 +215,7 @@ pub enum Instruction {
     /// Wait for key press and store it in `Vx`
     ///
     /// `Fx0A` - `LD Vx, K`
-    LoadKey(Vx /* TODO */),
+    LoadKey(Vx),
     /// Set delay timer to `Vx`
     ///
     /// `Fx15` - `LD DT, Vx`
