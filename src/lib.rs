@@ -2,6 +2,7 @@
 
 #![warn(missing_docs)]
 
+pub mod errors;
 pub mod instructions;
 pub mod vm;
 

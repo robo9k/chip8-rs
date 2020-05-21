@@ -5,3 +5,4 @@ authors = ["robo9k <robo@9k.lv>"]
 edition = "2018"
 
 [dependencies]
+thiserror = "1.0.18"
