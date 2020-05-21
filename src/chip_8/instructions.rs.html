@@ -788,10 +788,10 @@
             <span class="number">0x0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">kk</span> {
                 <span class="number">0xE0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Clear</span>),
                 <span class="number">0xEE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Return</span>),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Sys</span>(<span class="ident">nnn</span>.<span class="ident">into</span>())),
             },
-            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
-            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0x1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Jump</span>(<span class="ident">nnn</span>.<span class="ident">into</span>())),
+            <span class="number">0x2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Call</span>(<span class="ident">nnn</span>.<span class="ident">into</span>())),
             <span class="number">0x3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
             <span class="number">0x4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">SkipNotEqualOperand</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
             <span class="number">0x5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">low_nibble</span> {
@@ -820,8 +820,8 @@
                 )),
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Chip8Error</span>::<span class="ident">UnknownInstruction</span>(<span class="ident">bits</span>)),
             },
-            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
-            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="ident">nnn</span>))),
+            <span class="number">0xA</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LoadI</span>(<span class="ident">nnn</span>.<span class="ident">into</span>())),
+            <span class="number">0xB</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">LongJump</span>(<span class="ident">nnn</span>.<span class="ident">into</span>())),
             <span class="number">0xC</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Random</span>(<span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>, <span class="ident">kk</span>)),
             <span class="number">0xD</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Draw</span>(
                 <span class="ident">VRegister</span>::<span class="ident">try_from</span>(<span class="ident">x</span>)<span class="question-mark">?</span>,
@@ -865,7 +865,7 @@
     <span class="kw">fn</span> <span class="ident">decode_sys</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x0123</span>),
-            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">Addr</span>(<span class="number">0x0123</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="number">0x0123</span>.<span class="ident">into</span>()))
         );
     }
 
@@ -873,7 +873,7 @@
     <span class="kw">fn</span> <span class="ident">decode_jump</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x1234</span>),
-            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="ident">Addr</span>(<span class="number">0x0234</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="number">0x0234</span>.<span class="ident">into</span>()))
         );
     }
 
@@ -881,7 +881,7 @@
     <span class="kw">fn</span> <span class="ident">decode_call</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0x2345</span>),
-            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Call</span>(<span class="ident">Addr</span>(<span class="number">0x0345</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">Call</span>(<span class="number">0x0345</span>.<span class="ident">into</span>()))
         );
     }
 
@@ -1009,7 +1009,7 @@
     <span class="kw">fn</span> <span class="ident">decode_load_i</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xA123</span>),
-            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">LoadI</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">LoadI</span>(<span class="number">0x123</span>.<span class="ident">into</span>()))
         );
     }
 
@@ -1017,7 +1017,7 @@
     <span class="kw">fn</span> <span class="ident">decode_long_jump</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">Instruction</span>::<span class="ident">decode</span>(<span class="number">0xB123</span>),
-            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">LongJump</span>(<span class="ident">Addr</span>(<span class="number">0x123</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">Instruction</span>::<span class="ident">LongJump</span>(<span class="number">0x123</span>.<span class="ident">into</span>()))
         );
     }
 
