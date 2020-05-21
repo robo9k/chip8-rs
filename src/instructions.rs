@@ -321,6 +321,8 @@ impl Instruction {
                 0x1E => Ok(Instruction::AddI(VRegister::try_from(x)?)),
                 0x29 => Ok(Instruction::LoadSprite(VRegister::try_from(x)?)),
                 0x33 => Ok(Instruction::LoadBinaryCodedDecimal(VRegister::try_from(x)?)),
+                0x55 => Ok(Instruction::LoadMemoryRegisters(VRegister::try_from(x)?)),
+                0x65 => Ok(Instruction::LoadRegistersMemory(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
 
@@ -600,6 +602,22 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xF833),
             Ok(Instruction::LoadBinaryCodedDecimal(VRegister::V8))
+        );
+    }
+
+    #[test]
+    fn decode_loadmemoryregisters() {
+        assert_eq!(
+            Instruction::decode(0xF955),
+            Ok(Instruction::LoadMemoryRegisters(VRegister::V9))
+        );
+    }
+
+    #[test]
+    fn decode_loadregistersmemory() {
+        assert_eq!(
+            Instruction::decode(0xFA65),
+            Ok(Instruction::LoadRegistersMemory(VRegister::VA))
         );
     }
 }
