@@ -20,13 +20,14 @@ impl Default for VRegisters {
 
 impl VRegisters {
     /// Creates a new instance with default values
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             vregisters: [0; 16],
         }
     }
 
     /// Returns the current value of the register
+    #[must_use]
     pub fn register(&self, register: VRegister) -> &VRegisterValue {
         match register {
             VRegister::V0 => &self.vregisters[0],
@@ -49,6 +50,7 @@ impl VRegisters {
     }
 
     /// Returns the current mutable value of the register
+    #[must_use]
     pub fn register_mut(&mut self, register: VRegister) -> &mut VRegisterValue {
         match register {
             VRegister::V0 => &mut self.vregisters[0],
@@ -97,9 +99,11 @@ pub struct VM {
 }
 
 impl VM {
-    fn new() -> Self {
+    /// Creates a new instance
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
-            registers: VRegisters::default(),
+            registers: VRegisters::new(),
         }
     }
 
