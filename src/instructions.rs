@@ -153,15 +153,15 @@ pub enum Instruction {
     ///
     /// `8xy5` - `SUB Vx, Vy`
     Sub(Vx, Vy),
-    /// Sets `Vx` to `Vx SHR 1`
+    /// Sets `Vx` to `Vy SHR 1`
     ///
     /// `8xy6` - `SHR Vx {, Vy}`
     ShiftRight(Vx, Vy),
     /// Sets `Vx` to `Vy - Vx`, `VF` to not borrow
     ///
-    /// `8xy7` - `SUB Vx, Vy`
+    /// `8xy7` - `SUBN Vx, Vy`
     SubNegated(Vx, Vy),
-    /// Sets `Vx` to `Vx SHL 1`
+    /// Sets `Vx` to `Vy SHL 1`
     ///
     /// `8xyE` - `SHL Vx {, Vy}`
     ShiftLeft(Vx, Vy),
