@@ -124,6 +124,7 @@ impl VM {
             Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
             Instruction::Or(vx, vy) => self.registers[vx] |= self.registers[vy],
             Instruction::And(vx, vy) => self.registers[vx] &= self.registers[vy],
+            Instruction::XOr(vx, vy) => self.registers[vx] ^= self.registers[vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -254,6 +255,15 @@ mod tests {
             instruction: And(V2, V3),
             registers_before: {V2 => 0x01, V3 => 0x11},
             registers_after: {V2 => 0x01},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_xor {
+            instruction: XOr(V2, V3),
+            registers_before: {V2 => 0x01, V3 => 0x11},
+            registers_after: {V2 => 0x10},
             register_overflow: 0,
         }
     );
