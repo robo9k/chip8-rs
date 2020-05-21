@@ -105,6 +105,14 @@ impl VM {
 
     fn execute_instruction(&mut self, instruction: &Instruction) {
         match *instruction {
+            Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
+            Instruction::AddOperand(vx, byte) => {
+                self.registers[vx] = self.registers[vx].wrapping_add(byte)
+            }
+            Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
+            Instruction::Or(vx, vy) => self.registers[vx] |= self.registers[vy],
+            Instruction::And(vx, vy) => self.registers[vx] &= self.registers[vy],
+            Instruction::XOr(vx, vy) => self.registers[vx] ^= self.registers[vy],
             Instruction::Add(vx, vy) => {
                 let x = self.registers[vx] as u16;
                 let y = self.registers[vy] as u16;
@@ -117,14 +125,6 @@ impl VM {
 
                 self.registers[vx] = res as VRegisterValue;
             }
-            Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
-            Instruction::AddOperand(vx, byte) => {
-                self.registers[vx] = self.registers[vx].wrapping_add(byte)
-            }
-            Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
-            Instruction::Or(vx, vy) => self.registers[vx] |= self.registers[vy],
-            Instruction::And(vx, vy) => self.registers[vx] &= self.registers[vy],
-            Instruction::XOr(vx, vy) => self.registers[vx] ^= self.registers[vy],
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -188,24 +188,6 @@ mod tests {
     }
 
     registers_test!(
-        vm_execute_instruction_add {
-            instruction: Add(V2, V3),
-            registers_before: {V2 => 0xFE, V3 => 0x01},
-            registers_after: {V2 => 0xFF, V3 => 0x01},
-            register_overflow: 0,
-        }
-    );
-
-    registers_test!(
-        vm_execute_instruction_add_overflow {
-            instruction: Add(V2, V3),
-            registers_before: {V2 => 0xFF, V3 => 0x01},
-            registers_after: {V2 => 0x00, V3 => 0x01},
-            register_overflow: 1,
-        }
-    );
-
-    registers_test!(
         vm_execute_instruction_load_operand {
             instruction: LoadOperand(V2, 0xFF),
             registers_before: {V2 => 0xEE},
@@ -265,6 +247,24 @@ mod tests {
             registers_before: {V2 => 0x01, V3 => 0x11},
             registers_after: {V2 => 0x10},
             register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_add {
+            instruction: Add(V2, V3),
+            registers_before: {V2 => 0xFE, V3 => 0x01},
+            registers_after: {V2 => 0xFF, V3 => 0x01},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_add_overflow {
+            instruction: Add(V2, V3),
+            registers_before: {V2 => 0xFF, V3 => 0x01},
+            registers_after: {V2 => 0x00, V3 => 0x01},
+            register_overflow: 1,
         }
     );
 }
