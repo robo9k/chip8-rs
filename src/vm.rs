@@ -105,6 +105,14 @@ impl VM {
 
     fn execute_instruction(&mut self, instruction: &Instruction) {
         match *instruction {
+            // Sys(Addr)
+            // Clear
+            // Return
+            // Jump(Addr)
+            // Call(Addr)
+            // SkipEqualOperand(Vx, Byte)
+            // SkipNotEqualOperand(Vx, Byte)
+            // SkipEqual(Vx, Vy)
             Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
             Instruction::AddOperand(vx, byte) => {
                 self.registers[vx] = self.registers[vx].wrapping_add(byte)
@@ -159,7 +167,9 @@ impl VM {
 
                 self.registers[vx] = y << 1;
             }
-
+            // SkipNotEqual(Vx, Vy),
+            // LoadI(Addr),
+            // LongJump(Addr)
             other => panic!("Unimplemented instruction: {:?}", other),
         }
     }
