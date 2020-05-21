@@ -1,6 +1,6 @@
 //! Virtual machine
 
-use crate::instructions::VRegister;
+use crate::instructions::{Instruction, VRegister};
 use std::ops::{Index, IndexMut};
 
 /// Type of a general purpose register in the VM
@@ -89,6 +89,38 @@ impl IndexMut<VRegister> for VRegisters {
     }
 }
 
+/// Virtual machine
+pub struct VM {
+    registers: VRegisters,
+}
+
+impl VM {
+    fn new() -> Self {
+        Self {
+            registers: VRegisters::default(),
+        }
+    }
+
+    fn execute_instruction(&mut self, instruction: &Instruction) {
+        match instruction {
+            Instruction::Add(vx, vy) => {
+                let x = self.registers[*vx] as u16;
+                let y = self.registers[*vy] as u16;
+
+                let res = x + y;
+
+                // VF is carryover
+                self.registers[VRegister::VF] =
+                    (res > VRegisterValue::MAX as u16) as VRegisterValue;
+
+                self.registers[*vx] = res as VRegisterValue;
+            }
+
+            other => panic!("Unimplemented instruction: {:?}", other),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,5 +130,33 @@ mod tests {
         let mut registers = VRegisters::new();
         registers[VRegister::V0] = 42;
         assert_eq!(registers[VRegister::V0], 42);
+    }
+
+    #[test]
+    fn vm_execute_instruction_add() {
+        let mut vm = VM::new();
+        vm.registers[VRegister::V2] = 0xFE;
+        vm.registers[VRegister::V3] = 0x01;
+
+        vm.execute_instruction(&Instruction::Add(VRegister::V2, VRegister::V3));
+
+        assert_eq!(vm.registers[VRegister::V2], 0xFF);
+        assert_eq!(vm.registers[VRegister::V3], 0x01);
+
+        assert_eq!(vm.registers[VRegister::VF], 0);
+    }
+
+    #[test]
+    fn vm_execute_instruction_add_overflow() {
+        let mut vm = VM::new();
+        vm.registers[VRegister::V2] = 0xFF;
+        vm.registers[VRegister::V3] = 0x01;
+
+        vm.execute_instruction(&Instruction::Add(VRegister::V2, VRegister::V3));
+
+        assert_eq!(vm.registers[VRegister::V2], 0x00);
+        assert_eq!(vm.registers[VRegister::V3], 0x01);
+
+        assert_eq!(vm.registers[VRegister::VF], 1);
     }
 }
