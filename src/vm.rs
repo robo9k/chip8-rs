@@ -134,6 +134,14 @@ impl VM {
 
                 self.registers[vx] = x.wrapping_sub(y);
             }
+            Instruction::ShiftRight(vx, vy) => {
+                let y = self.registers[vy];
+
+                // VF is LSB before shift
+                self.registers[VRegister::VF] = y & 0x1;
+
+                self.registers[vx] = y >> 1;
+            }
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -287,11 +295,38 @@ mod tests {
     );
 
     registers_test!(
-        vm_execute_instruction_borrow {
+        vm_execute_instruction_sub_borrow {
             instruction: Sub(V2, V3),
             registers_before: {V2 => 0x3, V3 => 0x4},
             registers_after: {V2 => 0xFF, V3 => 0x4},
             register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftright {
+            instruction: ShiftRight(V2, V3),
+            registers_before: {V2 => 0b00, V3 => 0b10},
+            registers_after: {V2 => 0b01, V3 => 0b10},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftright_inplace {
+            instruction: ShiftRight(V2, V2),
+            registers_before: {V2 => 0b10},
+            registers_after: {V2 => 0b01},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftright_inplace_overflow {
+            instruction: ShiftRight(V2, V2),
+            registers_before: {V2 => 0b1111_1111},
+            registers_after: {V2 => 0b0111_1111},
+            register_overflow: 1,
         }
     );
 }
