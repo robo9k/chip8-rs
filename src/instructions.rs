@@ -320,6 +320,7 @@ impl Instruction {
                 0x18 => Ok(Instruction::LoadSoundTimerRegister(VRegister::try_from(x)?)),
                 0x1E => Ok(Instruction::AddI(VRegister::try_from(x)?)),
                 0x29 => Ok(Instruction::LoadSprite(VRegister::try_from(x)?)),
+                0x33 => Ok(Instruction::LoadBinaryCodedDecimal(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
 
@@ -591,6 +592,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xF729),
             Ok(Instruction::LoadSprite(VRegister::V7))
+        );
+    }
+
+    #[test]
+    fn decode_loadbinarycodeddecimal() {
+        assert_eq!(
+            Instruction::decode(0xF833),
+            Ok(Instruction::LoadBinaryCodedDecimal(VRegister::V8))
         );
     }
 }
