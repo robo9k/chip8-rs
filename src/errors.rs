@@ -3,7 +3,7 @@
 use thiserror::Error;
 
 /// Error type for all errors in this crate
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum Chip8Error {
     /// Invalid register definition
     #[error("invalid register {0:?}")]

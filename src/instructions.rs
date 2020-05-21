@@ -249,172 +249,185 @@ mod tests {
     use super::*;
 
     #[test]
+    fn vregister_tryfrom_ok() {
+        assert_eq!(VRegister::try_from(0x0), Ok(VRegister::V0));
+    }
+
+    #[test]
+    fn vregister_tryfrom_err() {
+        assert_eq!(
+            VRegister::try_from(0x10),
+            Err(Chip8Error::InvalidRegister(0x10))
+        );
+    }
+
+    #[test]
     fn decode_clear() {
-        assert_eq!(Instruction::decode(0x00E0).unwrap(), Instruction::Clear);
+        assert_eq!(Instruction::decode(0x00E0), Ok(Instruction::Clear));
     }
 
     #[test]
     fn decode_return() {
-        assert_eq!(Instruction::decode(0x00EE).unwrap(), Instruction::Return);
+        assert_eq!(Instruction::decode(0x00EE), Ok(Instruction::Return));
     }
 
     #[test]
     fn decode_sys() {
         assert_eq!(
-            Instruction::decode(0x0123).unwrap(),
-            Instruction::Sys(Addr(0x0123))
+            Instruction::decode(0x0123),
+            Ok(Instruction::Sys(Addr(0x0123)))
         );
     }
 
     #[test]
     fn decode_jump() {
         assert_eq!(
-            Instruction::decode(0x1234).unwrap(),
-            Instruction::Jump(Addr(0x0234))
+            Instruction::decode(0x1234),
+            Ok(Instruction::Jump(Addr(0x0234)))
         );
     }
 
     #[test]
     fn decode_call() {
         assert_eq!(
-            Instruction::decode(0x2345).unwrap(),
-            Instruction::Call(Addr(0x0345))
+            Instruction::decode(0x2345),
+            Ok(Instruction::Call(Addr(0x0345)))
         );
     }
 
     #[test]
     fn decode_skip_equal_operand() {
         assert_eq!(
-            Instruction::decode(0x30FF).unwrap(),
-            Instruction::SkipEqualOperand(VRegister::V0, 0xFF)
+            Instruction::decode(0x30FF),
+            Ok(Instruction::SkipEqualOperand(VRegister::V0, 0xFF))
         );
     }
 
     #[test]
     fn decode_skip_not_equal_operand() {
         assert_eq!(
-            Instruction::decode(0x40FF).unwrap(),
-            Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF)
+            Instruction::decode(0x40FF),
+            Ok(Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF))
         );
     }
 
     #[test]
     fn decode_skip_equal() {
         assert_eq!(
-            Instruction::decode(0x50F0).unwrap(),
-            Instruction::SkipEqual(VRegister::V0, VRegister::VF)
+            Instruction::decode(0x50F0),
+            Ok(Instruction::SkipEqual(VRegister::V0, VRegister::VF))
         );
     }
 
     #[test]
     fn decode_load_operand() {
         assert_eq!(
-            Instruction::decode(0x60FF).unwrap(),
-            Instruction::LoadOperand(VRegister::V0, 0xFF)
+            Instruction::decode(0x60FF),
+            Ok(Instruction::LoadOperand(VRegister::V0, 0xFF))
         );
     }
 
     #[test]
     fn decode_add_operand() {
         assert_eq!(
-            Instruction::decode(0x70FF).unwrap(),
-            Instruction::AddOperand(VRegister::V0, 0xFF)
+            Instruction::decode(0x70FF),
+            Ok(Instruction::AddOperand(VRegister::V0, 0xFF))
         );
     }
 
     #[test]
     fn decode_load() {
         assert_eq!(
-            Instruction::decode(0x8120).unwrap(),
-            Instruction::Load(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8120),
+            Ok(Instruction::Load(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_or() {
         assert_eq!(
-            Instruction::decode(0x8121).unwrap(),
-            Instruction::Or(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8121),
+            Ok(Instruction::Or(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_and() {
         assert_eq!(
-            Instruction::decode(0x8122).unwrap(),
-            Instruction::And(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8122),
+            Ok(Instruction::And(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_xor() {
         assert_eq!(
-            Instruction::decode(0x8123).unwrap(),
-            Instruction::XOr(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8123),
+            Ok(Instruction::XOr(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_add() {
         assert_eq!(
-            Instruction::decode(0x8124).unwrap(),
-            Instruction::Add(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8124),
+            Ok(Instruction::Add(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_sub() {
         assert_eq!(
-            Instruction::decode(0x8125).unwrap(),
-            Instruction::Sub(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8125),
+            Ok(Instruction::Sub(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_shift_right() {
         assert_eq!(
-            Instruction::decode(0x8126).unwrap(),
-            Instruction::ShiftRight(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8126),
+            Ok(Instruction::ShiftRight(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_sub_negated() {
         assert_eq!(
-            Instruction::decode(0x8127).unwrap(),
-            Instruction::SubNegated(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x8127),
+            Ok(Instruction::SubNegated(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_shift_left() {
         assert_eq!(
-            Instruction::decode(0x812E).unwrap(),
-            Instruction::ShiftLeft(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x812E),
+            Ok(Instruction::ShiftLeft(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_skip_not_equal() {
         assert_eq!(
-            Instruction::decode(0x9120).unwrap(),
-            Instruction::SkipNotEqual(VRegister::V1, VRegister::V2)
+            Instruction::decode(0x9120),
+            Ok(Instruction::SkipNotEqual(VRegister::V1, VRegister::V2))
         );
     }
 
     #[test]
     fn decode_load_i() {
         assert_eq!(
-            Instruction::decode(0xA123).unwrap(),
-            Instruction::LoadI(Addr(0x123))
+            Instruction::decode(0xA123),
+            Ok(Instruction::LoadI(Addr(0x123)))
         );
     }
 
     #[test]
     fn decode_long_jump() {
         assert_eq!(
-            Instruction::decode(0xB123).unwrap(),
-            Instruction::LongJump(Addr(0x123))
+            Instruction::decode(0xB123),
+            Ok(Instruction::LongJump(Addr(0x123)))
         );
     }
 }
