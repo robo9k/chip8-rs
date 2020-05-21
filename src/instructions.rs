@@ -2,6 +2,7 @@
 
 /// General purpose register
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[repr(usize)]
 pub enum VRegister {
     #[allow(missing_docs)]
     V0 = 0x0,
