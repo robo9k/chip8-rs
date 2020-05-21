@@ -302,6 +302,12 @@ impl Instruction {
             },
             0xA => Ok(LoadI(Addr(nnn))),
             0xB => Ok(LongJump(Addr(nnn))),
+            0xC => Ok(Random(VRegister::try_from(x)?, kk)),
+            0xD => Ok(Draw(
+                VRegister::try_from(x)?,
+                VRegister::try_from(y)?,
+                Nibble::from(low_nibble),
+            )),
 
             _ => Err(Chip8Error::UnknownInstruction(bits)),
         }
@@ -492,6 +498,22 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xB123),
             Ok(Instruction::LongJump(Addr(0x123)))
+        );
+    }
+
+    #[test]
+    fn decode_random() {
+        assert_eq!(
+            Instruction::decode(0xC0FF),
+            Ok(Instruction::Random(VRegister::V0, 0xFF))
+        );
+    }
+
+    #[test]
+    fn decode_draw() {
+        assert_eq!(
+            Instruction::decode(0xD0FA),
+            Ok(Instruction::Draw(VRegister::V0, VRegister::VF, 0xA.into()))
         );
     }
 }
