@@ -313,6 +313,13 @@ impl Instruction {
                 0xA1 => Ok(Instruction::SkipKeyNotPressed(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
+            0xF => match kk {
+                0x07 => Ok(Instruction::LoadRegisterDelayTimer(VRegister::try_from(x)?)),
+                0x0A => Ok(Instruction::LoadKey(VRegister::try_from(x)?)),
+                0x15 => Ok(Instruction::LoadDelayTimerRegister(VRegister::try_from(x)?)),
+                0x18 => Ok(Instruction::LoadSoundTimerRegister(VRegister::try_from(x)?)),
+                _ => Err(Chip8Error::UnknownInstruction(bits)),
+            },
 
             _ => Err(Chip8Error::UnknownInstruction(bits)),
         }
@@ -535,6 +542,37 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xE1A1),
             Ok(Instruction::SkipKeyNotPressed(VRegister::V1))
+        );
+    }
+    #[test]
+    fn decode_loadregisterdelaytimer() {
+        assert_eq!(
+            Instruction::decode(0xF207),
+            Ok(Instruction::LoadRegisterDelayTimer(VRegister::V2))
+        );
+    }
+
+    #[test]
+    fn decode_loadkey() {
+        assert_eq!(
+            Instruction::decode(0xF30A),
+            Ok(Instruction::LoadKey(VRegister::V3))
+        );
+    }
+
+    #[test]
+    fn decode_loaddelaytimerregister() {
+        assert_eq!(
+            Instruction::decode(0xF415),
+            Ok(Instruction::LoadDelayTimerRegister(VRegister::V4))
+        );
+    }
+
+    #[test]
+    fn decode_loadsounddimerregister() {
+        assert_eq!(
+            Instruction::decode(0xF518),
+            Ok(Instruction::LoadSoundTimerRegister(VRegister::V5))
         );
     }
 }
