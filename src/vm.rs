@@ -151,6 +151,14 @@ impl VM {
 
                 self.registers[vx] = y.wrapping_sub(x);
             }
+            Instruction::ShiftLeft(vx, vy) => {
+                let y = self.registers[vy];
+
+                // VF is MSB before shift
+                self.registers[VRegister::VF] = y >> 7;
+
+                self.registers[vx] = y << 1;
+            }
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -354,6 +362,33 @@ mod tests {
             registers_before: {V2 => 0x5, V3 => 0x3},
             registers_after: {V2 => 0xFE, V3 => 0x3},
             register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftleft {
+            instruction: ShiftLeft(V2, V3),
+            registers_before: {V2 => 0b00, V3 => 0b01},
+            registers_after: {V2 => 0b10, V3 => 0b01},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftleft_inplace {
+            instruction: ShiftLeft(V2, V2),
+            registers_before: {V2 => 0b0111_0111},
+            registers_after: {V2 => 0b1110_1110},
+            register_overflow: 0,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_shiftleft_inplace_overflow {
+            instruction: ShiftLeft(V2, V2),
+            registers_before: {V2 => 0b1111_0111},
+            registers_after: {V2 => 0b1110_1110},
+            register_overflow: 1,
         }
     );
 }
