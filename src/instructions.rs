@@ -1,5 +1,8 @@
 //! Machine language and byte code instructions
 
+use crate::errors::Chip8Error;
+use std::convert::TryFrom;
+
 /// General purpose register
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(usize)]
@@ -38,30 +41,29 @@ pub enum VRegister {
     VF = 0xF,
 }
 
-impl VRegister {
-    /// Matches `bits` to an `VRegister`
-    pub fn from(bits: u8) -> Option<VRegister> {
-        use self::VRegister::*;
+impl TryFrom<u8> for VRegister {
+    type Error = Chip8Error;
 
-        match bits {
-            0x0 => Some(V0),
-            0x1 => Some(V1),
-            0x2 => Some(V2),
-            0x3 => Some(V3),
-            0x4 => Some(V4),
-            0x5 => Some(V5),
-            0x6 => Some(V6),
-            0x7 => Some(V7),
-            0x8 => Some(V8),
-            0x9 => Some(V9),
-            0xA => Some(VA),
-            0xB => Some(VB),
-            0xC => Some(VC),
-            0xD => Some(VD),
-            0xE => Some(VE),
-            0xF => Some(VF),
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0x0 => Ok(Self::V0),
+            0x1 => Ok(Self::V1),
+            0x2 => Ok(Self::V2),
+            0x3 => Ok(Self::V3),
+            0x4 => Ok(Self::V4),
+            0x5 => Ok(Self::V5),
+            0x6 => Ok(Self::V6),
+            0x7 => Ok(Self::V7),
+            0x8 => Ok(Self::V8),
+            0x9 => Ok(Self::V9),
+            0xA => Ok(Self::VA),
+            0xB => Ok(Self::VB),
+            0xC => Ok(Self::VC),
+            0xD => Ok(Self::VD),
+            0xE => Ok(Self::VE),
+            0xF => Ok(Self::VF),
 
-            _ => None,
+            _ => Err(Chip8Error::InvalidRegister(value)),
         }
     }
 }
@@ -182,7 +184,7 @@ pub enum Instruction {
 
 impl Instruction {
     /// Decodes raw `bits` into a valid `Instruction`
-    pub fn decode(bits: u16) -> Option<Instruction> {
+    pub fn decode(bits: u16) -> crate::errors::Result<Instruction> {
         use self::Instruction::*;
 
         // lowest 12 bits
@@ -200,71 +202,44 @@ impl Instruction {
 
         match high_nibble {
             0x0 => match kk {
-                0xE0 => Some(Clear),
-                0xEE => Some(Return),
-                _ => Some(Sys(Addr(nnn))),
+                0xE0 => Ok(Clear),
+                0xEE => Ok(Return),
+                _ => Ok(Sys(Addr(nnn))),
             },
-            0x1 => Some(Jump(Addr(nnn))),
-            0x2 => Some(Call(Addr(nnn))),
-            0x3 => Some(SkipEqualOperand(VRegister::from(x).unwrap(), kk)),
-            0x4 => Some(SkipNotEqualOperand(VRegister::from(x).unwrap(), kk)),
+            0x1 => Ok(Jump(Addr(nnn))),
+            0x2 => Ok(Call(Addr(nnn))),
+            0x3 => Ok(SkipEqualOperand(VRegister::try_from(x)?, kk)),
+            0x4 => Ok(SkipNotEqualOperand(VRegister::try_from(x)?, kk)),
             0x5 => match low_nibble {
-                0x0 => Some(SkipEqual(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                _ => None,
+                0x0 => Ok(SkipEqual(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
-            0x6 => Some(LoadOperand(VRegister::from(x).unwrap(), kk)),
-            0x7 => Some(AddOperand(VRegister::from(x).unwrap(), kk)),
+            0x6 => Ok(LoadOperand(VRegister::try_from(x)?, kk)),
+            0x7 => Ok(AddOperand(VRegister::try_from(x)?, kk)),
             0x8 => match low_nibble {
-                0x0 => Some(Load(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x1 => Some(Or(VRegister::from(x).unwrap(), VRegister::from(y).unwrap())),
-                0x2 => Some(And(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x3 => Some(XOr(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x4 => Some(Add(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x5 => Some(Sub(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x6 => Some(ShiftRight(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0x7 => Some(SubNegated(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
-                0xE => Some(ShiftLeft(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
-                )),
+                0x0 => Ok(Load(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x1 => Ok(Or(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x2 => Ok(And(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x3 => Ok(XOr(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x4 => Ok(Add(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x5 => Ok(Sub(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x6 => Ok(ShiftRight(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0x7 => Ok(SubNegated(VRegister::try_from(x)?, VRegister::try_from(y)?)),
+                0xE => Ok(ShiftLeft(VRegister::try_from(x)?, VRegister::try_from(y)?)),
 
-                _ => None,
+                _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
             0x9 => match low_nibble {
-                0x0 => Some(SkipNotEqual(
-                    VRegister::from(x).unwrap(),
-                    VRegister::from(y).unwrap(),
+                0x0 => Ok(SkipNotEqual(
+                    VRegister::try_from(x)?,
+                    VRegister::try_from(y)?,
                 )),
-                _ => None,
+                _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
-            0xA => Some(LoadI(Addr(nnn))),
-            0xB => Some(LongJump(Addr(nnn))),
+            0xA => Ok(LoadI(Addr(nnn))),
+            0xB => Ok(LongJump(Addr(nnn))),
 
-            _ => None,
+            _ => Err(Chip8Error::UnknownInstruction(bits)),
         }
     }
 }
@@ -275,171 +250,171 @@ mod tests {
 
     #[test]
     fn decode_clear() {
-        assert_eq!(Instruction::decode(0x00E0), Some(Instruction::Clear));
+        assert_eq!(Instruction::decode(0x00E0).unwrap(), Instruction::Clear);
     }
 
     #[test]
     fn decode_return() {
-        assert_eq!(Instruction::decode(0x00EE), Some(Instruction::Return));
+        assert_eq!(Instruction::decode(0x00EE).unwrap(), Instruction::Return);
     }
 
     #[test]
     fn decode_sys() {
         assert_eq!(
-            Instruction::decode(0x0123),
-            Some(Instruction::Sys(Addr(0x0123)))
+            Instruction::decode(0x0123).unwrap(),
+            Instruction::Sys(Addr(0x0123))
         );
     }
 
     #[test]
     fn decode_jump() {
         assert_eq!(
-            Instruction::decode(0x1234),
-            Some(Instruction::Jump(Addr(0x0234)))
+            Instruction::decode(0x1234).unwrap(),
+            Instruction::Jump(Addr(0x0234))
         );
     }
 
     #[test]
     fn decode_call() {
         assert_eq!(
-            Instruction::decode(0x2345),
-            Some(Instruction::Call(Addr(0x0345)))
+            Instruction::decode(0x2345).unwrap(),
+            Instruction::Call(Addr(0x0345))
         );
     }
 
     #[test]
     fn decode_skip_equal_operand() {
         assert_eq!(
-            Instruction::decode(0x30FF),
-            Some(Instruction::SkipEqualOperand(VRegister::V0, 0xFF))
+            Instruction::decode(0x30FF).unwrap(),
+            Instruction::SkipEqualOperand(VRegister::V0, 0xFF)
         );
     }
 
     #[test]
     fn decode_skip_not_equal_operand() {
         assert_eq!(
-            Instruction::decode(0x40FF),
-            Some(Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF))
+            Instruction::decode(0x40FF).unwrap(),
+            Instruction::SkipNotEqualOperand(VRegister::V0, 0xFF)
         );
     }
 
     #[test]
     fn decode_skip_equal() {
         assert_eq!(
-            Instruction::decode(0x50F0),
-            Some(Instruction::SkipEqual(VRegister::V0, VRegister::VF))
+            Instruction::decode(0x50F0).unwrap(),
+            Instruction::SkipEqual(VRegister::V0, VRegister::VF)
         );
     }
 
     #[test]
     fn decode_load_operand() {
         assert_eq!(
-            Instruction::decode(0x60FF),
-            Some(Instruction::LoadOperand(VRegister::V0, 0xFF))
+            Instruction::decode(0x60FF).unwrap(),
+            Instruction::LoadOperand(VRegister::V0, 0xFF)
         );
     }
 
     #[test]
     fn decode_add_operand() {
         assert_eq!(
-            Instruction::decode(0x70FF),
-            Some(Instruction::AddOperand(VRegister::V0, 0xFF))
+            Instruction::decode(0x70FF).unwrap(),
+            Instruction::AddOperand(VRegister::V0, 0xFF)
         );
     }
 
     #[test]
     fn decode_load() {
         assert_eq!(
-            Instruction::decode(0x8120),
-            Some(Instruction::Load(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8120).unwrap(),
+            Instruction::Load(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_or() {
         assert_eq!(
-            Instruction::decode(0x8121),
-            Some(Instruction::Or(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8121).unwrap(),
+            Instruction::Or(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_and() {
         assert_eq!(
-            Instruction::decode(0x8122),
-            Some(Instruction::And(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8122).unwrap(),
+            Instruction::And(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_xor() {
         assert_eq!(
-            Instruction::decode(0x8123),
-            Some(Instruction::XOr(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8123).unwrap(),
+            Instruction::XOr(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_add() {
         assert_eq!(
-            Instruction::decode(0x8124),
-            Some(Instruction::Add(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8124).unwrap(),
+            Instruction::Add(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_sub() {
         assert_eq!(
-            Instruction::decode(0x8125),
-            Some(Instruction::Sub(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8125).unwrap(),
+            Instruction::Sub(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_shift_right() {
         assert_eq!(
-            Instruction::decode(0x8126),
-            Some(Instruction::ShiftRight(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8126).unwrap(),
+            Instruction::ShiftRight(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_sub_negated() {
         assert_eq!(
-            Instruction::decode(0x8127),
-            Some(Instruction::SubNegated(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x8127).unwrap(),
+            Instruction::SubNegated(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_shift_left() {
         assert_eq!(
-            Instruction::decode(0x812E),
-            Some(Instruction::ShiftLeft(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x812E).unwrap(),
+            Instruction::ShiftLeft(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_skip_not_equal() {
         assert_eq!(
-            Instruction::decode(0x9120),
-            Some(Instruction::SkipNotEqual(VRegister::V1, VRegister::V2))
+            Instruction::decode(0x9120).unwrap(),
+            Instruction::SkipNotEqual(VRegister::V1, VRegister::V2)
         );
     }
 
     #[test]
     fn decode_load_i() {
         assert_eq!(
-            Instruction::decode(0xA123),
-            Some(Instruction::LoadI(Addr(0x123)))
+            Instruction::decode(0xA123).unwrap(),
+            Instruction::LoadI(Addr(0x123))
         );
     }
 
     #[test]
     fn decode_long_jump() {
         assert_eq!(
-            Instruction::decode(0xB123),
-            Some(Instruction::LongJump(Addr(0x123)))
+            Instruction::decode(0xB123).unwrap(),
+            Instruction::LongJump(Addr(0x123))
         );
     }
 }
