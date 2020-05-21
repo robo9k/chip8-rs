@@ -142,6 +142,15 @@ impl VM {
 
                 self.registers[vx] = y >> 1;
             }
+            Instruction::SubNegated(vx, vy) => {
+                let x = self.registers[vx];
+                let y = self.registers[vy];
+
+                // VF is not borrow i.e. y > x
+                self.registers[VRegister::VF] = (y > x) as VRegisterValue;
+
+                self.registers[vx] = y.wrapping_sub(x);
+            }
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -327,6 +336,24 @@ mod tests {
             registers_before: {V2 => 0b1111_1111},
             registers_after: {V2 => 0b0111_1111},
             register_overflow: 1,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_subnegated {
+            instruction: SubNegated(V2, V3),
+            registers_before: {V2 => 0x2, V3 => 0x3},
+            registers_after: {V2 => 0x1, V3 => 0x3},
+            register_overflow: 1,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_subnegated_borrow {
+            instruction: SubNegated(V2, V3),
+            registers_before: {V2 => 0x5, V3 => 0x3},
+            registers_after: {V2 => 0xFE, V3 => 0x3},
+            register_overflow: 0,
         }
     );
 }
