@@ -319,6 +319,7 @@ impl Instruction {
                 0x15 => Ok(Instruction::LoadDelayTimerRegister(VRegister::try_from(x)?)),
                 0x18 => Ok(Instruction::LoadSoundTimerRegister(VRegister::try_from(x)?)),
                 0x1E => Ok(Instruction::AddI(VRegister::try_from(x)?)),
+                0x29 => Ok(Instruction::LoadSprite(VRegister::try_from(x)?)),
                 _ => Err(Chip8Error::UnknownInstruction(bits)),
             },
 
@@ -582,6 +583,14 @@ mod tests {
         assert_eq!(
             Instruction::decode(0xF61E),
             Ok(Instruction::AddI(VRegister::V6))
+        );
+    }
+
+    #[test]
+    fn decode_loadsprite() {
+        assert_eq!(
+            Instruction::decode(0xF729),
+            Ok(Instruction::LoadSprite(VRegister::V7))
         );
     }
 }
