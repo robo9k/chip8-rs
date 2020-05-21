@@ -125,6 +125,15 @@ impl VM {
 
                 self.registers[vx] = res as VRegisterValue;
             }
+            Instruction::Sub(vx, vy) => {
+                let x = self.registers[vx];
+                let y = self.registers[vy];
+
+                // VF is Not Borrow i.e. x > y
+                self.registers[VRegister::VF] = (x > y) as VRegisterValue;
+
+                self.registers[vx] = x.wrapping_sub(y);
+            }
 
             other => panic!("Unimplemented instruction: {:?}", other),
         }
@@ -265,6 +274,24 @@ mod tests {
             registers_before: {V2 => 0xFF, V3 => 0x01},
             registers_after: {V2 => 0x00, V3 => 0x01},
             register_overflow: 1,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_sub {
+            instruction: Sub(V2, V3),
+            registers_before: {V2 => 0x3, V3 => 0x2},
+            registers_after: {V2 => 0x1, V3 => 0x2},
+            register_overflow: 1,
+        }
+    );
+
+    registers_test!(
+        vm_execute_instruction_borrow {
+            instruction: Sub(V2, V3),
+            registers_before: {V2 => 0x3, V3 => 0x4},
+            registers_after: {V2 => 0xFF, V3 => 0x4},
+            register_overflow: 0,
         }
     );
 }
