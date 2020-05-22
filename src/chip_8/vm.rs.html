@@ -369,6 +369,10 @@
 <span id="369">369</span>
 <span id="370">370</span>
 <span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Virtual machine</span>
 
@@ -376,31 +380,35 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Index</span>, <span class="ident">IndexMut</span>};
 
 <span class="doccomment">/// Type of a general purpose register in the VM</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">VRegisterValue</span> <span class="op">=</span> <span class="ident">u8</span>;
+<span class="kw">type</span> <span class="ident">VRegisterValue</span> <span class="op">=</span> <span class="ident">u8</span>;
 
-<span class="doccomment">/// General purpose registers</span>
+<span class="doccomment">/// CPU registers</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// General purpose `V0`..`VF` and `I`</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VRegisters</span> {
+<span class="kw">struct</span> <span class="ident">Registers</span> {
     <span class="ident">vregisters</span>: [<span class="ident">VRegisterValue</span>; <span class="number">16</span>], <span class="comment">// TODO: Use variant_count for constant?</span>
+    <span class="ident">i</span>: <span class="ident">u16</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">VRegisters</span> {
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Registers</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>::<span class="ident">new</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">VRegisters</span> {
+<span class="kw">impl</span> <span class="ident">Registers</span> {
     <span class="doccomment">/// Creates a new instance with default values</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">vregisters</span>: [<span class="number">0</span>; <span class="number">16</span>],
+            <span class="ident">i</span>: <span class="number">0</span>,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">VRegister</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">VRegisters</span> {
+<span class="kw">impl</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">VRegister</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Registers</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">VRegisterValue</span>;
 
     <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">VRegister</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
@@ -408,7 +416,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">VRegister</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">VRegisters</span> {
+<span class="kw">impl</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">VRegister</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Registers</span> {
     <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">VRegister</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">vregisters</span>[<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>]
     }
@@ -417,7 +425,7 @@
 <span class="doccomment">/// Virtual machine</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VM</span> {
-    <span class="ident">registers</span>: <span class="ident">VRegisters</span>,
+    <span class="ident">registers</span>: <span class="ident">Registers</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">VM</span> {
@@ -425,7 +433,7 @@
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
-            <span class="ident">registers</span>: <span class="ident">VRegisters</span>::<span class="ident">new</span>(),
+            <span class="ident">registers</span>: <span class="ident">Registers</span>::<span class="ident">new</span>(),
         }
     }
 
@@ -521,7 +529,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vregisters_set_get</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">registers</span> <span class="op">=</span> <span class="ident">VRegisters</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">registers</span> <span class="op">=</span> <span class="ident">Registers</span>::<span class="ident">new</span>();
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Created registers: {:?}&quot;</span>, <span class="ident">registers</span>);
 
         <span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">42</span>;
