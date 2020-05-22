@@ -4,31 +4,35 @@ use crate::instructions::{Instruction, VRegister};
 use std::ops::{Index, IndexMut};
 
 /// Type of a general purpose register in the VM
-pub type VRegisterValue = u8;
+type VRegisterValue = u8;
 
-/// General purpose registers
+/// CPU registers
+///
+/// General purpose `V0`..`VF` and `I`
 #[derive(Debug)]
-pub struct VRegisters {
+struct Registers {
     vregisters: [VRegisterValue; 16], // TODO: Use variant_count for constant?
+    i: u16,
 }
 
-impl Default for VRegisters {
+impl Default for Registers {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl VRegisters {
+impl Registers {
     /// Creates a new instance with default values
     #[must_use]
     pub const fn new() -> Self {
         Self {
             vregisters: [0; 16],
+            i: 0,
         }
     }
 }
 
-impl Index<VRegister> for VRegisters {
+impl Index<VRegister> for Registers {
     type Output = VRegisterValue;
 
     fn index(&self, index: VRegister) -> &Self::Output {
@@ -36,7 +40,7 @@ impl Index<VRegister> for VRegisters {
     }
 }
 
-impl IndexMut<VRegister> for VRegisters {
+impl IndexMut<VRegister> for Registers {
     fn index_mut(&mut self, index: VRegister) -> &mut Self::Output {
         &mut self.vregisters[index as usize]
     }
@@ -45,7 +49,7 @@ impl IndexMut<VRegister> for VRegisters {
 /// Virtual machine
 #[derive(Debug)]
 pub struct VM {
-    registers: VRegisters,
+    registers: Registers,
 }
 
 impl VM {
@@ -53,7 +57,7 @@ impl VM {
     #[must_use]
     pub const fn new() -> Self {
         Self {
-            registers: VRegisters::new(),
+            registers: Registers::new(),
         }
     }
 
@@ -149,7 +153,7 @@ mod tests {
 
     #[test]
     fn vregisters_set_get() {
-        let mut registers = VRegisters::new();
+        let mut registers = Registers::new();
         println!("Created registers: {:?}", registers);
 
         registers[V0] = 42;
