@@ -68,6 +68,60 @@ impl TryFrom<u8> for VRegister {
     }
 }
 
+struct VRegisterRangeIter {
+    next: Option<VRegister>,
+    range: Option<VRegister>,
+}
+
+impl Iterator for VRegisterRangeIter {
+    type Item = VRegister;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        use VRegister::*;
+
+        if self.range.is_none() {
+            return None;
+        }
+
+        let next = self.next;
+        self.next = match self.next {
+            Some(V0) => Some(V1),
+            Some(V1) => Some(V2),
+            Some(V2) => Some(V3),
+            Some(V3) => Some(V4),
+            Some(V4) => Some(V5),
+            Some(V5) => Some(V6),
+            Some(V6) => Some(V7),
+            Some(V7) => Some(V8),
+            Some(V8) => Some(V9),
+            Some(V9) => Some(VA),
+            Some(VA) => Some(VB),
+            Some(VB) => Some(VC),
+            Some(VC) => Some(VD),
+            Some(VD) => Some(VE),
+            Some(VE) => Some(VF),
+            Some(VF) => None,
+            None => None,
+        };
+        if next == self.range {
+            self.range = None;
+        }
+
+        next
+    }
+}
+
+impl VRegister {
+    /// Returns an `Iterator` from `V0` up to including `upper_bound`
+    // NOTE: This could be implemented much nicer with `std::iter::Step`
+    pub fn iter_to(upper_bound: VRegister) -> impl Iterator<Item = VRegister> {
+        VRegisterRangeIter {
+            next: Some(Self::V0),
+            range: Some(upper_bound),
+        }
+    }
+}
+
 /// First register in an instruction
 pub type Vx = VRegister;
 
@@ -624,5 +678,31 @@ mod tests {
             Instruction::decode(0xFA65),
             Ok(Instruction::LoadRegistersMemory(VRegister::VA))
         );
+    }
+
+    #[test]
+    fn vregister_iter_to_v0() {
+        use super::VRegister::*;
+        assert!(VRegister::iter_to(V0).eq(vec![V0].iter().map(|r| *r)));
+    }
+
+    #[test]
+    fn vregister_iter_to_va() {
+        use super::VRegister::*;
+        assert!(
+            VRegister::iter_to(VA).eq(vec![V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, VA]
+                .iter()
+                .map(|r| *r))
+        );
+    }
+
+    #[test]
+    fn vregister_iter_to_vf() {
+        use super::VRegister::*;
+        assert!(VRegister::iter_to(VF).eq(vec![
+            V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, VA, VB, VC, VD, VE, VF
+        ]
+        .iter()
+        .map(|r| *r)));
     }
 }
