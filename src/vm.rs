@@ -91,7 +91,7 @@ where
             // Sys(Addr)
             // Clear
             // Return
-            // Jump(Addr)
+            Instruction::Jump(addr) => self.registers.pc = addr.into(),
             // Call(Addr)
             // SkipEqualOperand(Vx, Byte)
             // SkipNotEqualOperand(Vx, Byte)
@@ -227,6 +227,16 @@ mod tests {
                 );
             }
         };
+    }
+
+    #[test]
+    fn vm_execute_instruction_jump() {
+        let mut vm = VM::new();
+        vm.registers.pc = 0x0;
+
+        vm.execute_instruction(&Instruction::Jump(0x0FFF.into()));
+
+        assert_eq!(vm.registers.pc, 0x0FFF);
     }
 
     registers_test!(
