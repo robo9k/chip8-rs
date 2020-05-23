@@ -59,10 +59,11 @@ impl IndexMut<VRegister> for Registers {
 }
 
 /// Virtual machine
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct VM<R: Rng> {
     registers: Registers,
     rng: R,
+    sys_fn: fn(&mut Self, crate::instructions::Addr),
 }
 
 impl VM<rand::rngs::ThreadRng> {
@@ -83,12 +84,15 @@ where
         Self {
             registers: Registers::new(),
             rng: rng,
+            sys_fn: |_vm, addr| {
+                println!("SYS {:?}", addr);
+            },
         }
     }
 
     fn execute_instruction(&mut self, instruction: &Instruction) {
         match *instruction {
-            // Sys(Addr)
+            Instruction::Sys(addr) => (self.sys_fn)(self, addr),
             // Clear
             // Return
             Instruction::Jump(addr) => self.registers.pc = addr.into(),
@@ -222,7 +226,7 @@ mod tests {
                 $(
                   vm.registers[$register_before] = $register_before_value;
                 )+
-                println!("Created VM: {:?}", vm);
+                //println!("Created VM: {:?}", vm);
 
                 vm.execute_instruction(&$instruction);
                 println!("Executed instruction: {:?}", $instruction);
@@ -246,6 +250,15 @@ mod tests {
                 );
             }
         };
+    }
+
+    #[test]
+    fn vm_execute_instruction_sys() {
+        let mut vm = VM::new();
+
+        vm.execute_instruction(&Instruction::Sys(0x0FFF.into()));
+
+        // There's nothing useful to assert in the current implementation
     }
 
     #[test]
