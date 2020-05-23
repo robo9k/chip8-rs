@@ -168,7 +168,10 @@ where
                 }
             }
             Instruction::LoadI(addr) => self.registers.i = addr.into(),
-            // LongJump(Addr)
+            Instruction::LongJump(addr) => {
+                let addr: PCRegisterValue = addr.into();
+                self.registers.pc = self.registers[VRegister::V0] as PCRegisterValue + addr;
+            }
             Instruction::Random(vx, byte) => {
                 self.registers[vx] = self.rng.gen::<VRegisterValue>() & byte
             }
@@ -480,6 +483,17 @@ mod tests {
         vm.execute_instruction(&LoadI(0x0AAA.into()));
 
         assert_eq!(vm.registers.i, 0x0AAA);
+    }
+
+    #[test]
+    fn vm_execute_instruction_longjump() {
+        let mut vm = VM::new();
+        vm.registers.pc = 0x0111;
+        vm.registers[V0] = 0x11;
+
+        vm.execute_instruction(&LongJump(0x0111.into()));
+
+        assert_eq!(vm.registers.pc, 0x0122);
     }
 
     #[test]
