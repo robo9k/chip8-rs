@@ -10,6 +10,12 @@ type VRegisterValue = u8;
 /// Type of the address register `I`
 type IRegisterValue = u16;
 
+/// Type of the program counter register
+type PCRegisterValue = u16;
+
+/// Memory address for programm (ROM) start
+const PROGRAM_START: PCRegisterValue = 0x200;
+
 /// CPU registers
 ///
 /// General purpose `V0`..`VF` and `I`
@@ -17,6 +23,7 @@ type IRegisterValue = u16;
 struct Registers {
     vregisters: [VRegisterValue; 16], // TODO: Use variant_count for constant?
     i: IRegisterValue,
+    pc: PCRegisterValue,
 }
 
 impl Default for Registers {
@@ -32,6 +39,7 @@ impl Registers {
         Self {
             vregisters: [0; 16],
             i: 0,
+            pc: PROGRAM_START,
         }
     }
 }
