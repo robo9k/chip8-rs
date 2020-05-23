@@ -6,13 +6,16 @@ use std::ops::{Index, IndexMut};
 /// Type of a general purpose register in the VM
 type VRegisterValue = u8;
 
+/// Type of the address register `I`
+type IRegisterValue = u16;
+
 /// CPU registers
 ///
 /// General purpose `V0`..`VF` and `I`
 #[derive(Debug)]
 struct Registers {
     vregisters: [VRegisterValue; 16], // TODO: Use variant_count for constant?
-    i: u16,
+    i: IRegisterValue,
 }
 
 impl Default for Registers {
@@ -126,7 +129,7 @@ impl VM {
                 self.registers[vx] = y << 1;
             }
             // SkipNotEqual(Vx, Vy),
-            // LoadI(Addr),
+            Instruction::LoadI(addr) => self.registers.i = addr.into(),
             // LongJump(Addr)
             // Random(Vx, Byte)
             // Draw(Vx, Vy, Nibble)
@@ -372,4 +375,14 @@ mod tests {
             register_overflow: 1,
         }
     );
+
+    #[test]
+    fn vm_execute_instruction_loadi() {
+        let mut vm = VM::new();
+        vm.registers.i = 0xF0F0;
+
+        vm.execute_instruction(&LoadI(0x0AAA.into()));
+
+        assert_eq!(vm.registers.i, 0x0AAA);
+    }
 }
