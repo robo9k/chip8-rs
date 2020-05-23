@@ -139,7 +139,7 @@ impl VM {
             // LoadKey(Vx)
             // LoadDelayTimerRegister(Vx)
             // LoadSoundTimerRegister(Vx)
-            // AddI(Vx)
+            Instruction::AddI(vx) => self.registers.i += self.registers[vx] as IRegisterValue,
             // LoadSprite(Vx)
             // LoadBinaryCodedDecimal(Vx)
             // LoadMemoryRegisters(Vx)
@@ -384,5 +384,16 @@ mod tests {
         vm.execute_instruction(&LoadI(0x0AAA.into()));
 
         assert_eq!(vm.registers.i, 0x0AAA);
+    }
+
+    #[test]
+    fn vm_execute_instruction_addi() {
+        let mut vm = VM::new();
+        vm.registers[V0] = 0x1;
+        vm.registers.i = 0x0AAA;
+
+        vm.execute_instruction(&AddI(V0));
+
+        assert_eq!(vm.registers.i, 0x0AAB);
     }
 }
