@@ -143,6 +143,12 @@ impl From<u16> for Addr {
     }
 }
 
+impl From<Addr> for u16 {
+    fn from(addr: Addr) -> u16 {
+        addr.0
+    }
+}
+
 /// Hex digit
 ///
 /// Valid values are within `0x0` .. `0xF`.
