@@ -162,7 +162,11 @@ where
 
                 self.registers[vx] = y << 1;
             }
-            // SkipNotEqual(Vx, Vy),
+            Instruction::SkipNotEqual(vx, vy) => {
+                if self.registers[vx] != self.registers[vy] {
+                    self.registers.pc += 2
+                }
+            }
             Instruction::LoadI(addr) => self.registers.i = addr.into(),
             // LongJump(Addr)
             Instruction::Random(vx, byte) => {
@@ -455,6 +459,18 @@ mod tests {
             register_overflow: 1,
         }
     );
+
+    #[test]
+    fn vm_execute_instruction_skipnotequal() {
+        let mut vm = VM::new();
+        vm.registers.pc = 0x0;
+        vm.registers[V0] = 0xFF;
+        vm.registers[VF] = 0xEE;
+
+        vm.execute_instruction(&Instruction::SkipNotEqual(V0, VF));
+
+        assert_eq!(vm.registers.pc, 0x0002);
+    }
 
     #[test]
     fn vm_execute_instruction_loadi() {
