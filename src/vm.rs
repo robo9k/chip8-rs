@@ -1,6 +1,7 @@
 //! Virtual machine
 
 use crate::instructions::{Instruction, VRegister};
+use rand::Rng;
 use std::ops::{Index, IndexMut};
 
 /// Type of a general purpose register in the VM
@@ -51,16 +52,29 @@ impl IndexMut<VRegister> for Registers {
 
 /// Virtual machine
 #[derive(Debug)]
-pub struct VM {
+pub struct VM<R: Rng> {
     registers: Registers,
+    rng: R,
 }
 
-impl VM {
-    /// Creates a new instance
+impl VM<rand::rngs::ThreadRng> {
+    /// Creates a new instance with thread-local random number generator
     #[must_use]
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
+        Self::with_rng(rand::thread_rng())
+    }
+}
+
+impl<R> VM<R>
+where
+    R: rand::Rng,
+{
+    /// Creates a new instance with the given RNG
+    #[must_use]
+    pub fn with_rng(rng: R) -> Self {
         Self {
             registers: Registers::new(),
+            rng: rng,
         }
     }
 
@@ -131,7 +145,9 @@ impl VM {
             // SkipNotEqual(Vx, Vy),
             Instruction::LoadI(addr) => self.registers.i = addr.into(),
             // LongJump(Addr)
-            // Random(Vx, Byte)
+            Instruction::Random(vx, byte) => {
+                self.registers[vx] = self.rng.gen::<VRegisterValue>() & byte
+            }
             // Draw(Vx, Vy, Nibble)
             // SkipKeyPressed(Vx)
             // SkipKeyNotPressed(Vx)
@@ -395,5 +411,16 @@ mod tests {
         vm.execute_instruction(&AddI(V0));
 
         assert_eq!(vm.registers.i, 0x0AAB);
+    }
+
+    #[test]
+    fn vm_execute_instruction_random() {
+        let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
+        let mut vm = VM::with_rng(rng);
+        vm.registers[V0] = 0x00;
+
+        vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000));
+
+        assert_eq!(vm.registers[V0], 0b1000_0000);
     }
 }
