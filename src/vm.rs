@@ -93,7 +93,11 @@ where
             // Return
             Instruction::Jump(addr) => self.registers.pc = addr.into(),
             // Call(Addr)
-            // SkipEqualOperand(Vx, Byte)
+            Instruction::SkipEqualOperand(vx, byte) => {
+                if self.registers[vx] == byte {
+                    self.registers.pc += 2;
+                }
+            }
             // SkipNotEqualOperand(Vx, Byte)
             // SkipEqual(Vx, Vy)
             Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
@@ -237,6 +241,17 @@ mod tests {
         vm.execute_instruction(&Instruction::Jump(0x0FFF.into()));
 
         assert_eq!(vm.registers.pc, 0x0FFF);
+    }
+
+    #[test]
+    fn vm_execute_instruction_skipequaloperand() {
+        let mut vm = VM::new();
+        vm.registers.pc = 0x0;
+        vm.registers[V0] = 0xFF;
+
+        vm.execute_instruction(&Instruction::SkipEqualOperand(V0, 0xFF));
+
+        assert_eq!(vm.registers.pc, 0x0002);
     }
 
     registers_test!(
