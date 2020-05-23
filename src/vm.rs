@@ -98,7 +98,11 @@ where
                     self.registers.pc += 2;
                 }
             }
-            // SkipNotEqualOperand(Vx, Byte)
+            Instruction::SkipNotEqualOperand(vx, byte) => {
+                if self.registers[vx] != byte {
+                    self.registers.pc += 2;
+                }
+            }
             // SkipEqual(Vx, Vy)
             Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
             Instruction::AddOperand(vx, byte) => {
@@ -250,6 +254,17 @@ mod tests {
         vm.registers[V0] = 0xFF;
 
         vm.execute_instruction(&Instruction::SkipEqualOperand(V0, 0xFF));
+
+        assert_eq!(vm.registers.pc, 0x0002);
+    }
+
+    #[test]
+    fn vm_execute_instruction_skipnotequaloperand() {
+        let mut vm = VM::new();
+        vm.registers.pc = 0x0;
+        vm.registers[V0] = 0xFF;
+
+        vm.execute_instruction(&Instruction::SkipNotEqualOperand(V0, 0xEE));
 
         assert_eq!(vm.registers.pc, 0x0002);
     }
