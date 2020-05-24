@@ -1,5 +1,7 @@
 //! Keys and keypad
 
+use crate::errors::Chip8Error;
+use std::convert::TryFrom;
 use std::ops::{Index, IndexMut};
 
 /// Possible state for each key
@@ -55,6 +57,34 @@ pub enum Key {
     /// Key `F`
     KeyF = 0xF,
 }
+
+impl TryFrom<u8> for Key {
+    type Error = Chip8Error;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0x0 => Ok(Self::Key0),
+            0x1 => Ok(Self::Key1),
+            0x2 => Ok(Self::Key2),
+            0x3 => Ok(Self::Key3),
+            0x4 => Ok(Self::Key4),
+            0x5 => Ok(Self::Key5),
+            0x6 => Ok(Self::Key6),
+            0x7 => Ok(Self::Key7),
+            0x8 => Ok(Self::Key8),
+            0x9 => Ok(Self::Key9),
+            0xA => Ok(Self::KeyA),
+            0xB => Ok(Self::KeyB),
+            0xC => Ok(Self::KeyC),
+            0xD => Ok(Self::KeyD),
+            0xE => Ok(Self::KeyE),
+            0xF => Ok(Self::KeyF),
+
+            _ => Err(Chip8Error::InvalidKey(value)),
+        }
+    }
+}
+
 /// 16-key hexadecimal keypad
 ///
 /// # Key layout

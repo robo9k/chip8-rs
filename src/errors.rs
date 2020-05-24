@@ -16,6 +16,10 @@ pub enum Chip8Error {
     /// Known but unimplemented instruction
     #[error("unimplemented instruction {0:?}")]
     UnimplementedInstruction(crate::instructions::Instruction),
+
+    /// Invalid key definition
+    #[error("invalid key {0:?}")]
+    InvalidKey(u8),
 }
 
 /// Result alias

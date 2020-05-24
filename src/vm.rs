@@ -1,7 +1,9 @@
 //! Virtual machine
 
 use crate::instructions::{Instruction, VRegister};
+use crate::keypad::{Key, KeyState};
 use rand::Rng;
+use std::convert::TryFrom;
 use std::ops::{Index, IndexMut};
 
 /// Type of a general purpose register in the VM
@@ -188,7 +190,13 @@ where
                 self.registers[vx] = self.rng.gen::<VRegisterValue>() & byte
             }
             // Draw(Vx, Vy, Nibble)
-            // SkipKeyPressed(Vx)
+            Instruction::SkipKeyPressed(vx) => {
+                let key_idx = self.registers[vx];
+                let key = Key::try_from(key_idx)?;
+                if self.keypad[key] == KeyState::Pressed {
+                    self.registers.pc += 2;
+                }
+            }
             // SkipKeyNotPressed(Vx)
             // LoadRegisterDelayTimer(Vx)
             // LoadKey(Vx)
@@ -209,6 +217,7 @@ where
 mod tests {
     use super::*;
     use crate::instructions::{Instruction::*, VRegister::*};
+    use crate::keypad::{Key::*, KeyState::*};
 
     #[test]
     fn vregisters_set_get() {
@@ -543,6 +552,19 @@ mod tests {
         vm.execute_instruction(&LongJump(0x0111.into()))?;
 
         assert_eq!(vm.registers.pc, 0x0122);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_skipkeypressed() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers.pc = 0x0111;
+        vm.registers[V6] = 0x4;
+        vm.keypad[Key4] = Pressed;
+
+        vm.execute_instruction(&SkipKeyPressed(V6))?;
+
+        assert_eq!(vm.registers.pc, 0x0113);
         Ok(())
     }
 
