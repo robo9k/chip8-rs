@@ -66,11 +66,11 @@ pub struct VM<R: Rng> {
     sys_fn: fn(&mut Self, crate::instructions::Addr),
 }
 
-impl VM<rand::rngs::ThreadRng> {
+impl Default for VM<rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
     #[must_use]
-    pub fn new() -> Self {
-        Self::with_rng(rand::thread_rng())
+    fn default() -> Self {
+        Self::new(rand::thread_rng(), |_, _| {})
     }
 }
 
@@ -80,13 +80,11 @@ where
 {
     /// Creates a new instance with the given RNG
     #[must_use]
-    pub fn with_rng(rng: R) -> Self {
+    pub fn new(rng: R, sys_fn: fn(&mut Self, crate::instructions::Addr)) -> Self {
         Self {
             registers: Registers::new(),
-            rng: rng,
-            sys_fn: |_vm, addr| {
-                println!("SYS {:?}", addr);
-            },
+            rng,
+            sys_fn,
         }
     }
 
@@ -224,7 +222,7 @@ mod tests {
         ) => {
             #[test]
             fn $test_name() -> crate::errors::Result<()> {
-                let mut vm = $crate::vm::VM::new();
+                let mut vm = $crate::vm::VM::default();
                 $(
                   vm.registers[$register_before] = $register_before_value;
                 )+
@@ -258,7 +256,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_sys() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
 
         vm.execute_instruction(&Instruction::Sys(0x0FFF.into()))?;
 
@@ -268,7 +266,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_jump() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0;
 
         vm.execute_instruction(&Instruction::Jump(0x0FFF.into()))?;
@@ -279,7 +277,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipequaloperand() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
@@ -291,7 +289,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipnotequaloperand() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
@@ -303,7 +301,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipequal() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xFF;
@@ -487,7 +485,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipnotequal() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xEE;
@@ -500,7 +498,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadi() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.i = 0xF0F0;
 
         vm.execute_instruction(&LoadI(0x0AAA.into()))?;
@@ -511,7 +509,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_longjump() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers.pc = 0x0111;
         vm.registers[V0] = 0x11;
 
@@ -523,7 +521,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_addi() -> crate::errors::Result<()> {
-        let mut vm = VM::new();
+        let mut vm = VM::default();
         vm.registers[V0] = 0x1;
         vm.registers.i = 0x0AAA;
 
@@ -536,7 +534,7 @@ mod tests {
     #[test]
     fn vm_execute_instruction_random() -> crate::errors::Result<()> {
         let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
-        let mut vm = VM::with_rng(rng);
+        let mut vm = VM::new(rng, |_, _| {});
         vm.registers[V0] = 0x00;
 
         vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000))?;
