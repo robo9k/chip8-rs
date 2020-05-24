@@ -545,6 +545,29 @@
 <span id="545">545</span>
 <span id="546">546</span>
 <span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Virtual machine</span>
 
@@ -611,14 +634,18 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span><span class="op">&gt;</span> {
     <span class="ident">registers</span>: <span class="ident">Registers</span>,
     <span class="ident">rng</span>: <span class="ident">R</span>,
-    <span class="ident">sys_fn</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="kw">crate</span>::<span class="ident">instructions</span>::<span class="ident">Addr</span>),
+    <span class="ident">sys_fn</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="kw">crate</span>::<span class="ident">instructions</span>::<span class="ident">Addr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">rand</span>::<span class="ident">rngs</span>::<span class="ident">ThreadRng</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">rand</span>::<span class="ident">rngs</span>::<span class="ident">ThreadRng</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new instance with thread-local random number generator</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span>::<span class="ident">with_rng</span>(<span class="ident">rand</span>::<span class="ident">thread_rng</span>())
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">rand</span>::<span class="ident">thread_rng</span>(), <span class="op">|</span><span class="kw">_</span>, <span class="ident">addr</span><span class="op">|</span> {
+            <span class="prelude-val">Err</span>(<span class="kw">crate</span>::<span class="ident">errors</span>::<span class="ident">Chip8Error</span>::<span class="ident">UnimplementedInstruction</span>(
+                <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">addr</span>),
+            ))
+        })
     }
 }
 
@@ -628,20 +655,21 @@
 {
     <span class="doccomment">/// Creates a new instance with the given RNG</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_rng</span>(<span class="ident">rng</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">rng</span>: <span class="ident">R</span>,
+        <span class="ident">sys_fn</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="kw">crate</span>::<span class="ident">instructions</span>::<span class="ident">Addr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">registers</span>: <span class="ident">Registers</span>::<span class="ident">new</span>(),
-            <span class="ident">rng</span>: <span class="ident">rng</span>,
-            <span class="ident">sys_fn</span>: <span class="op">|</span><span class="ident">_vm</span>, <span class="ident">addr</span><span class="op">|</span> {
-                <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;SYS {:?}&quot;</span>, <span class="ident">addr</span>);
-            },
+            <span class="ident">rng</span>,
+            <span class="ident">sys_fn</span>,
         }
     }
 
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">fn</span> <span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">instruction</span>: <span class="kw-2">&amp;</span><span class="ident">Instruction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">instruction</span> {
-            <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="self">self</span>.<span class="ident">sys_fn</span>)(<span class="self">self</span>, <span class="ident">addr</span>),
+            <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> (<span class="self">self</span>.<span class="ident">sys_fn</span>)(<span class="self">self</span>, <span class="ident">addr</span>),
             <span class="comment">// Clear</span>
             <span class="comment">// Return</span>
             <span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="ident">addr</span>.<span class="ident">into</span>(),
@@ -772,7 +800,7 @@
         ) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="attribute">#[<span class="ident">test</span>]</span>
             <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">test_name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">vm</span>::<span class="ident">VM</span>::<span class="ident">new</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">vm</span>::<span class="ident">VM</span>::<span class="ident">default</span>();
                 $(
                   <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">register_before</span>] <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">register_before_value</span>;
                 )<span class="op">+</span>
@@ -805,8 +833,26 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">vm_execute_instruction_sys</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+    <span class="kw">fn</span> <span class="ident">vm_execute_instruction_sys_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
+
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="number">0x0FFF</span>.<span class="ident">into</span>()));
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">res</span>,
+            <span class="prelude-val">Err</span>(<span class="kw">crate</span>::<span class="ident">errors</span>::<span class="ident">Chip8Error</span>::<span class="ident">UnimplementedInstruction</span>(
+                <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="number">0x0FFF</span>.<span class="ident">into</span>())
+            ))
+        );
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">vm_execute_instruction_sys_sysfn</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>(<span class="ident">rand</span>::<span class="ident">thread_rng</span>(), <span class="op">|</span><span class="kw">_</span>, <span class="ident">addr</span><span class="op">|</span> {
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">addr</span>, <span class="number">0x0FFF</span>.<span class="ident">into</span>());
+            <span class="prelude-val">Ok</span>(())
+        });
 
         <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="number">0x0FFF</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
 
@@ -816,7 +862,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_jump</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0</span>;
 
         <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="number">0x0FFF</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
@@ -827,7 +873,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_skipequaloperand</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0xFF</span>;
 
@@ -839,7 +885,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_skipnotequaloperand</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0xFF</span>;
 
@@ -851,7 +897,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_skipequal</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0xFF</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">VF</span>] <span class="op">=</span> <span class="number">0xFF</span>;
@@ -1035,7 +1081,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_skipnotequal</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0xFF</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">VF</span>] <span class="op">=</span> <span class="number">0xEE</span>;
@@ -1048,7 +1094,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_loadi</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">i</span> <span class="op">=</span> <span class="number">0xF0F0</span>;
 
         <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">LoadI</span>(<span class="number">0x0AAA</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
@@ -1059,7 +1105,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_longjump</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="number">0x0111</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0x11</span>;
 
@@ -1071,7 +1117,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_addi</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">default</span>();
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0x1</span>;
         <span class="ident">vm</span>.<span class="ident">registers</span>.<span class="ident">i</span> <span class="op">=</span> <span class="number">0x0AAA</span>;
 
@@ -1084,7 +1130,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">vm_execute_instruction_random</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">bufrng</span>::<span class="ident">BufRng</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0b1000_0000</span>]);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">with_rng</span>(<span class="ident">rng</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>(<span class="ident">rng</span>, <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> <span class="prelude-val">Ok</span>(()));
         <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="ident">V0</span>] <span class="op">=</span> <span class="number">0x00</span>;
 
         <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">Instruction</span>::<span class="ident">Random</span>(<span class="ident">V0</span>, <span class="number">0b1100_0000</span>))<span class="question-mark">?</span>;
