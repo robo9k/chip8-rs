@@ -1,67 +1,116 @@
 //! Keys and keypad
 
-use bitflags::bitflags;
+use std::ops::{Index, IndexMut};
 
-bitflags! {
-    /// 16-key hexadecimal keypad
-    // table without thead requires html
-    /// <table>
-    ///     <tr>
-    ///         <td>1
-    ///         <td>2
-    ///         <td>3
-    ///         <td>C
-    ///     <tr>
-    ///         <td>4
-    ///         <td>5
-    ///         <td>6
-    ///         <td>D
-    ///     <tr>
-    ///         <td>7
-    ///         <td>8
-    ///         <td>9
-    ///         <td>E
-    ///     <tr>
-    ///         <td>A
-    ///         <td>0
-    ///         <td>B
-    ///         <td>F
-    /// </table>
-    #[derive(Default)]
-    pub struct Keypad: u8 {
-        /// Key `0`
-        // see notes about zero flags in bitflags! docs
-        const KEY_0 = 0x1;
-        /// Key `1`
-        const KEY_1 = 0x2;
-        /// Key `2`
-        const KEY_2 = 0x3;
-        /// Key `3`
-        const KEY_3 = 0x4;
-        /// Key `4`
-        const KEY_4 = 0x5;
-        /// Key `5`
-        const KEY_5 = 0x6;
-        /// Key `6`
-        const KEY_6 = 0x7;
-        /// Key `7`
-        const KEY_7 = 0x8;
-        /// Key `8`
-        const KEY_8 = 0x9;
-        /// Key `9`
-        const KEY_9 = 0xA;
-        /// Key `A`
-        const KEY_A = 0xB;
-        /// Key `B`
-        const KEY_B = 0xC;
-        /// Key `C`
-        const KEY_C = 0xD;
-        /// Key `D`
-        const KEY_D = 0xE;
-        /// Key `E`
-        const KEY_E = 0xF;
-        /// Key `F`
-        const KEY_F = 0x10;
+/// Possible state for each key
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum KeyState {
+    /// Key not pressed
+    NotPressed = 0,
+    /// Key pressed
+    Pressed = 1,
+}
+
+impl Default for KeyState {
+    fn default() -> Self {
+        Self::NotPressed
+    }
+}
+
+/// Individual key on the [`Keypad`]
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Key {
+    /// Key `0`
+    Key0 = 0x0,
+    /// Key `1`
+    Key1 = 0x1,
+    /// Key `2`
+    Key2 = 0x2,
+    /// Key `3`
+    Key3 = 0x3,
+    /// Key `4`
+    Key4 = 0x4,
+    /// Key `5`
+    Key5 = 0x5,
+    /// Key `6`
+    Key6 = 0x6,
+    /// Key `7`
+    Key7 = 0x7,
+    /// Key `8`
+    Key8 = 0x8,
+    /// Key `9`
+    Key9 = 0x9,
+    /// Key `A`
+    KeyA = 0xA,
+    /// Key `B`
+    KeyB = 0xB,
+    /// Key `C`
+    KeyC = 0xC,
+    /// Key `D`
+    KeyD = 0xD,
+    /// Key `E`
+    KeyE = 0xE,
+    /// Key `F`
+    KeyF = 0xF,
+}
+/// 16-key hexadecimal keypad
+///
+/// # Key layout
+// table without thead requires html
+/// <table>
+///     <tr>
+///         <td>1
+///         <td>2
+///         <td>3
+///         <td>C
+///     <tr>
+///         <td>4
+///         <td>5
+///         <td>6
+///         <td>D
+///     <tr>
+///         <td>7
+///         <td>8
+///         <td>9
+///         <td>E
+///     <tr>
+///         <td>A
+///         <td>0
+///         <td>B
+///         <td>F
+/// </table>
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Keypad {
+    state: [KeyState; 16],
+}
+
+impl Keypad {
+    /// Creates a new instance with default state for each key
+    pub fn new() -> Self {
+        Self {
+            state: [KeyState::default(); 16],
+        }
+    }
+}
+
+impl Index<Key> for Keypad {
+    type Output = KeyState;
+
+    fn index(&self, index: Key) -> &Self::Output {
+        &self.state[index as usize]
+    }
+}
+
+impl IndexMut<Key> for Keypad {
+    fn index_mut(&mut self, index: Key) -> &mut Self::Output {
+        &mut self.state[index as usize]
+    }
+}
+
+impl Default for Keypad {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -71,8 +120,25 @@ mod tests {
 
     #[test]
     fn keypad_default() {
+        use super::{Key::*, KeyState::*};
+
         let keypad = Keypad::default();
 
-        assert!(keypad.is_empty());
+        assert_eq!(keypad[Key0], NotPressed);
+        assert_eq!(keypad[Key1], NotPressed);
+        assert_eq!(keypad[Key2], NotPressed);
+        assert_eq!(keypad[Key3], NotPressed);
+        assert_eq!(keypad[Key4], NotPressed);
+        assert_eq!(keypad[Key5], NotPressed);
+        assert_eq!(keypad[Key6], NotPressed);
+        assert_eq!(keypad[Key7], NotPressed);
+        assert_eq!(keypad[Key8], NotPressed);
+        assert_eq!(keypad[Key9], NotPressed);
+        assert_eq!(keypad[KeyA], NotPressed);
+        assert_eq!(keypad[KeyB], NotPressed);
+        assert_eq!(keypad[KeyC], NotPressed);
+        assert_eq!(keypad[KeyD], NotPressed);
+        assert_eq!(keypad[KeyE], NotPressed);
+        assert_eq!(keypad[KeyF], NotPressed);
     }
 }
