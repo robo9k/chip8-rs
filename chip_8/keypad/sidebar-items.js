@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Key","Individual key on the [`Keypad`]"],["KeyState","Possible state for each key"]],"struct":[["Keypad","16-key hexadecimal keypad"]]});
