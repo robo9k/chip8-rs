@@ -6,6 +6,10 @@ edition = "2018"
 description = "CHIP-8"
 repository = "https://github.com/robo9k/chip8-rs"
 license = "MIT OR Apache-2.0"
+build = "build.rs"
+
+[build-dependencies]
+skeptic = "0.13"
 
 [dependencies]
 thiserror = "1.0.18"
@@ -14,3 +18,4 @@ rand = "0.7.3"
 [dev-dependencies]
 bufrng = "1.0.2"
 version-sync = "0.9"
+skeptic = "0.13"
