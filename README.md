@@ -5,9 +5,9 @@
 ```rust,skt-instruction-decode
 use chip_8::instructions::{Instruction, VRegister::VA};
 
-let decoded_instruction = Instruction::decode(0xCAFF)?;
+let decoded_instruction = Instruction::decode(0xCAFE)?;
 
-assert_eq!(decoded_instruction, Instruction::Random(VA, 0xFF));
+assert_eq!(decoded_instruction, Instruction::Random(VA, 0xFE));
 ```
 
 ## Usage
