@@ -67,6 +67,7 @@ pub struct VM<R: Rng> {
     rng: R,
     sys_fn: fn(&mut Self, crate::instructions::Addr) -> crate::errors::Result<()>,
     keypad: crate::keypad::Keypad,
+    waiting_on_any_keypress: Option<VRegister>,
 }
 
 impl Default for VM<rand::rngs::ThreadRng> {
@@ -96,6 +97,7 @@ where
             rng,
             sys_fn,
             keypad: crate::keypad::Keypad::default(),
+            waiting_on_any_keypress: None,
         }
     }
 
@@ -205,7 +207,7 @@ where
                 }
             }
             // LoadRegisterDelayTimer(Vx)
-            // LoadKey(Vx)
+            Instruction::LoadKey(vx) => self.waiting_on_any_keypress = Some(vx),
             // LoadDelayTimerRegister(Vx)
             // LoadSoundTimerRegister(Vx)
             Instruction::AddI(vx) => self.registers.i += self.registers[vx] as IRegisterValue,
@@ -584,6 +586,17 @@ mod tests {
         vm.execute_instruction(&SkipKeyNotPressed(V6))?;
 
         assert_eq!(vm.registers.pc, 0x0113);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_loadkey() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.waiting_on_any_keypress = None;
+
+        vm.execute_instruction(&LoadKey(V6))?;
+
+        assert_eq!(vm.waiting_on_any_keypress, Some(V6));
         Ok(())
     }
 
