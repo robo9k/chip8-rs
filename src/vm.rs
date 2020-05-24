@@ -63,14 +63,18 @@ impl IndexMut<VRegister> for Registers {
 pub struct VM<R: Rng> {
     registers: Registers,
     rng: R,
-    sys_fn: fn(&mut Self, crate::instructions::Addr),
+    sys_fn: fn(&mut Self, crate::instructions::Addr) -> crate::errors::Result<()>,
 }
 
 impl Default for VM<rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
     #[must_use]
     fn default() -> Self {
-        Self::new(rand::thread_rng(), |_, _| {})
+        Self::new(rand::thread_rng(), |_, addr| {
+            Err(crate::errors::Chip8Error::UnimplementedInstruction(
+                Instruction::Sys(addr),
+            ))
+        })
     }
 }
 
@@ -80,7 +84,10 @@ where
 {
     /// Creates a new instance with the given RNG
     #[must_use]
-    pub fn new(rng: R, sys_fn: fn(&mut Self, crate::instructions::Addr)) -> Self {
+    pub fn new(
+        rng: R,
+        sys_fn: fn(&mut Self, crate::instructions::Addr) -> crate::errors::Result<()>,
+    ) -> Self {
         Self {
             registers: Registers::new(),
             rng,
@@ -91,7 +98,7 @@ where
     #[must_use]
     fn execute_instruction(&mut self, instruction: &Instruction) -> crate::errors::Result<()> {
         match *instruction {
-            Instruction::Sys(addr) => (self.sys_fn)(self, addr),
+            Instruction::Sys(addr) => return (self.sys_fn)(self, addr),
             // Clear
             // Return
             Instruction::Jump(addr) => self.registers.pc = addr.into(),
@@ -255,8 +262,26 @@ mod tests {
     }
 
     #[test]
-    fn vm_execute_instruction_sys() -> crate::errors::Result<()> {
+    fn vm_execute_instruction_sys_default() -> crate::errors::Result<()> {
         let mut vm = VM::default();
+
+        let res = vm.execute_instruction(&Instruction::Sys(0x0FFF.into()));
+
+        assert_eq!(
+            res,
+            Err(crate::errors::Chip8Error::UnimplementedInstruction(
+                Instruction::Sys(0x0FFF.into())
+            ))
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_sys_sysfn() -> crate::errors::Result<()> {
+        let mut vm = VM::new(rand::thread_rng(), |_, addr| {
+            assert_eq!(addr, 0x0FFF.into());
+            Ok(())
+        });
 
         vm.execute_instruction(&Instruction::Sys(0x0FFF.into()))?;
 
@@ -534,7 +559,7 @@ mod tests {
     #[test]
     fn vm_execute_instruction_random() -> crate::errors::Result<()> {
         let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
-        let mut vm = VM::new(rng, |_, _| {});
+        let mut vm = VM::new(rng, |_, _| Ok(()));
         vm.registers[V0] = 0x00;
 
         vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000))?;
