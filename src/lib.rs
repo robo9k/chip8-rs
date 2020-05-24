@@ -1,5 +1,6 @@
 //! Virtual machine for the CHIP-8 programming language
 
+#![doc(html_root_url = "https://docs.rs/chip_8/0.1.0")]
 #![warn(missing_docs)]
 
 pub mod errors;

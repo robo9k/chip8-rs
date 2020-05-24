@@ -13,3 +13,4 @@ rand = "0.7.3"
 
 [dev-dependencies]
 bufrng = "1.0.2"
+version-sync = "0.9"
