@@ -90,7 +90,8 @@ where
         }
     }
 
-    fn execute_instruction(&mut self, instruction: &Instruction) {
+    #[must_use]
+    fn execute_instruction(&mut self, instruction: &Instruction) -> crate::errors::Result<()> {
         match *instruction {
             Instruction::Sys(addr) => (self.sys_fn)(self, addr),
             // Clear
@@ -191,8 +192,9 @@ where
             // LoadBinaryCodedDecimal(Vx)
             // LoadMemoryRegisters(Vx)
             // LoadRegistersMemory(Vx)
-            other => panic!("Unimplemented instruction: {:?}", other),
+            other => return Err(crate::errors::Chip8Error::UnimplementedInstruction(other)),
         }
+        Ok(())
     }
 }
 
@@ -221,14 +223,14 @@ mod tests {
             }
         ) => {
             #[test]
-            fn $test_name() {
+            fn $test_name() -> crate::errors::Result<()> {
                 let mut vm = $crate::vm::VM::new();
                 $(
                   vm.registers[$register_before] = $register_before_value;
                 )+
                 //println!("Created VM: {:?}", vm);
 
-                vm.execute_instruction(&$instruction);
+                vm.execute_instruction(&$instruction)?;
                 println!("Executed instruction: {:?}", $instruction);
 
                 $(
@@ -248,61 +250,68 @@ mod tests {
                     $register_overflow_value,
                     vm.registers[$crate::instructions::VRegister::VF],
                 );
+
+                Ok(())
             }
         };
     }
 
     #[test]
-    fn vm_execute_instruction_sys() {
+    fn vm_execute_instruction_sys() -> crate::errors::Result<()> {
         let mut vm = VM::new();
 
-        vm.execute_instruction(&Instruction::Sys(0x0FFF.into()));
+        vm.execute_instruction(&Instruction::Sys(0x0FFF.into()))?;
 
         // There's nothing useful to assert in the current implementation
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_jump() {
+    fn vm_execute_instruction_jump() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0;
 
-        vm.execute_instruction(&Instruction::Jump(0x0FFF.into()));
+        vm.execute_instruction(&Instruction::Jump(0x0FFF.into()))?;
 
         assert_eq!(vm.registers.pc, 0x0FFF);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_skipequaloperand() {
+    fn vm_execute_instruction_skipequaloperand() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
-        vm.execute_instruction(&Instruction::SkipEqualOperand(V0, 0xFF));
+        vm.execute_instruction(&Instruction::SkipEqualOperand(V0, 0xFF))?;
 
         assert_eq!(vm.registers.pc, 0x0002);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_skipnotequaloperand() {
+    fn vm_execute_instruction_skipnotequaloperand() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
-        vm.execute_instruction(&Instruction::SkipNotEqualOperand(V0, 0xEE));
+        vm.execute_instruction(&Instruction::SkipNotEqualOperand(V0, 0xEE))?;
 
         assert_eq!(vm.registers.pc, 0x0002);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_skipequal() {
+    fn vm_execute_instruction_skipequal() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xFF;
 
-        vm.execute_instruction(&Instruction::SkipEqual(V0, VF));
+        vm.execute_instruction(&Instruction::SkipEqual(V0, VF))?;
 
         assert_eq!(vm.registers.pc, 0x0002);
+        Ok(())
     }
 
     registers_test!(
@@ -477,57 +486,62 @@ mod tests {
     );
 
     #[test]
-    fn vm_execute_instruction_skipnotequal() {
+    fn vm_execute_instruction_skipnotequal() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xEE;
 
-        vm.execute_instruction(&Instruction::SkipNotEqual(V0, VF));
+        vm.execute_instruction(&Instruction::SkipNotEqual(V0, VF))?;
 
         assert_eq!(vm.registers.pc, 0x0002);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_loadi() {
+    fn vm_execute_instruction_loadi() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.i = 0xF0F0;
 
-        vm.execute_instruction(&LoadI(0x0AAA.into()));
+        vm.execute_instruction(&LoadI(0x0AAA.into()))?;
 
         assert_eq!(vm.registers.i, 0x0AAA);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_longjump() {
+    fn vm_execute_instruction_longjump() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers.pc = 0x0111;
         vm.registers[V0] = 0x11;
 
-        vm.execute_instruction(&LongJump(0x0111.into()));
+        vm.execute_instruction(&LongJump(0x0111.into()))?;
 
         assert_eq!(vm.registers.pc, 0x0122);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_addi() {
+    fn vm_execute_instruction_addi() -> crate::errors::Result<()> {
         let mut vm = VM::new();
         vm.registers[V0] = 0x1;
         vm.registers.i = 0x0AAA;
 
-        vm.execute_instruction(&AddI(V0));
+        vm.execute_instruction(&AddI(V0))?;
 
         assert_eq!(vm.registers.i, 0x0AAB);
+        Ok(())
     }
 
     #[test]
-    fn vm_execute_instruction_random() {
+    fn vm_execute_instruction_random() -> crate::errors::Result<()> {
         let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
         let mut vm = VM::with_rng(rng);
         vm.registers[V0] = 0x00;
 
-        vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000));
+        vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000))?;
 
         assert_eq!(vm.registers[V0], 0b1000_0000);
+        Ok(())
     }
 }
