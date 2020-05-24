@@ -12,6 +12,7 @@ pub enum KeyState {
 }
 
 impl Default for KeyState {
+    #[must_use]
     fn default() -> Self {
         Self::NotPressed
     }
@@ -87,6 +88,7 @@ pub struct Keypad {
 
 impl Keypad {
     /// Creates a new instance with default state for each key
+    #[must_use]
     pub fn new() -> Self {
         Self {
             state: [KeyState::default(); 16],
@@ -97,18 +99,21 @@ impl Keypad {
 impl Index<Key> for Keypad {
     type Output = KeyState;
 
+    #[must_use]
     fn index(&self, index: Key) -> &Self::Output {
         &self.state[index as usize]
     }
 }
 
 impl IndexMut<Key> for Keypad {
+    #[must_use]
     fn index_mut(&mut self, index: Key) -> &mut Self::Output {
         &mut self.state[index as usize]
     }
 }
 
 impl Default for Keypad {
+    #[must_use]
     fn default() -> Self {
         Self::new()
     }
