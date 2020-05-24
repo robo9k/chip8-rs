@@ -1,15 +1,17 @@
 [package]
 name = "chip_8"
 version = "0.1.0"
-authors = ["robo9k <robo@9k.lv>"]
+authors = ["robo9k <robo9k@symlink.io>"]
 edition = "2018"
-description = "CHIP-8"
+description = """
+CHIP-8 virtual machine / emulator
+"""
+readme = "README.md"
 repository = "https://github.com/robo9k/chip8-rs"
 license = "MIT OR Apache-2.0"
+keywords = ["chip-8", "chip8"]
+categories = ["emulators", "parser-implementations"]
 build = "build.rs"
-
-[build-dependencies]
-skeptic = "0.13"
 
 [dependencies]
 thiserror = "1.0.18"
@@ -19,3 +21,10 @@ rand = "0.7.3"
 bufrng = "1.0.2"
 version-sync = "0.9"
 skeptic = "0.13"
+
+[build-dependencies]
+skeptic = "0.13"
+
+[badges]
+codecov = { repository = "robo9k/chip8-rs" }
+maintenance = { status = "experimental" }
