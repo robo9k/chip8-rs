@@ -25,7 +25,7 @@ Add a dependency to your `Cargo.toml` (see [The Cargo Book](https://doc.rust-lan
 
 ```toml
 [dependencies]
-chip_8 = "0.1.0"
+chip_8 = "0.2.0"
 ```
 
 # License
