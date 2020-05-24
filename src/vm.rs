@@ -197,7 +197,13 @@ where
                     self.registers.pc += 2;
                 }
             }
-            // SkipKeyNotPressed(Vx)
+            Instruction::SkipKeyNotPressed(vx) => {
+                let key_idx = self.registers[vx];
+                let key = Key::try_from(key_idx)?;
+                if self.keypad[key] == KeyState::NotPressed {
+                    self.registers.pc += 2;
+                }
+            }
             // LoadRegisterDelayTimer(Vx)
             // LoadKey(Vx)
             // LoadDelayTimerRegister(Vx)
@@ -563,6 +569,19 @@ mod tests {
         vm.keypad[Key4] = Pressed;
 
         vm.execute_instruction(&SkipKeyPressed(V6))?;
+
+        assert_eq!(vm.registers.pc, 0x0113);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_skipkeynotpressed() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers.pc = 0x0111;
+        vm.registers[V6] = 0x4;
+        vm.keypad[Key4] = NotPressed;
+
+        vm.execute_instruction(&SkipKeyNotPressed(V6))?;
 
         assert_eq!(vm.registers.pc, 0x0113);
         Ok(())
