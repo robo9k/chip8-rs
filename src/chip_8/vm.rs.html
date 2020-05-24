@@ -518,6 +518,19 @@
 <span id="518">518</span>
 <span id="519">519</span>
 <span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Virtual machine</span>
 
@@ -580,10 +593,11 @@
 }
 
 <span class="doccomment">/// Virtual machine</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="comment">//#[derive(Debug)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span><span class="op">&gt;</span> {
     <span class="ident">registers</span>: <span class="ident">Registers</span>,
     <span class="ident">rng</span>: <span class="ident">R</span>,
+    <span class="ident">sys_fn</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="kw">crate</span>::<span class="ident">instructions</span>::<span class="ident">Addr</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">rand</span>::<span class="ident">rngs</span>::<span class="ident">ThreadRng</span><span class="op">&gt;</span> {
@@ -604,12 +618,15 @@
         <span class="self">Self</span> {
             <span class="ident">registers</span>: <span class="ident">Registers</span>::<span class="ident">new</span>(),
             <span class="ident">rng</span>: <span class="ident">rng</span>,
+            <span class="ident">sys_fn</span>: <span class="op">|</span><span class="ident">_vm</span>, <span class="ident">addr</span><span class="op">|</span> {
+                <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;SYS {:?}&quot;</span>, <span class="ident">addr</span>);
+            },
         }
     }
 
     <span class="kw">fn</span> <span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">instruction</span>: <span class="kw-2">&amp;</span><span class="ident">Instruction</span>) {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">instruction</span> {
-            <span class="comment">// Sys(Addr)</span>
+            <span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="self">self</span>.<span class="ident">sys_fn</span>)(<span class="self">self</span>, <span class="ident">addr</span>),
             <span class="comment">// Clear</span>
             <span class="comment">// Return</span>
             <span class="ident">Instruction</span>::<span class="ident">Jump</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">registers</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="ident">addr</span>.<span class="ident">into</span>(),
@@ -743,7 +760,7 @@
                 $(
                   <span class="ident">vm</span>.<span class="ident">registers</span>[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">register_before</span>] <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">register_before_value</span>;
                 )<span class="op">+</span>
-                <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Created VM: {:?}&quot;</span>, <span class="ident">vm</span>);
+                <span class="comment">//println!(&quot;Created VM: {:?}&quot;, vm);</span>
 
                 <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">instruction</span>);
                 <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Executed instruction: {:?}&quot;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">instruction</span>);
@@ -767,6 +784,15 @@
                 );
             }
         };
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">vm_execute_instruction_sys</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">VM</span>::<span class="ident">new</span>();
+
+        <span class="ident">vm</span>.<span class="ident">execute_instruction</span>(<span class="kw-2">&amp;</span><span class="ident">Instruction</span>::<span class="ident">Sys</span>(<span class="number">0x0FFF</span>.<span class="ident">into</span>()));
+
+        <span class="comment">// There&#39;s nothing useful to assert in the current implementation</span>
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
