@@ -12,6 +12,10 @@ pub enum Chip8Error {
     /// Unknown instruction
     #[error("unknown instruction {0:?}")]
     UnknownInstruction(u16),
+
+    /// Known but unimplemented instruction
+    #[error("unimplemented instruction {0:?}")]
+    UnimplementedInstruction(crate::instructions::Instruction),
 }
 
 /// Result alias

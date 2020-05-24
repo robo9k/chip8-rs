@@ -4,7 +4,7 @@ use crate::errors::Chip8Error;
 use std::convert::TryFrom;
 
 /// General purpose register
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(usize)]
 pub enum VRegister {
     #[allow(missing_docs)]
@@ -134,7 +134,7 @@ pub type Byte = u8;
 /// Absolute memory address
 ///
 /// Valid addresses are within `0x0` .. `0xFFF`.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Addr(u16);
 
 impl From<u16> for Addr {
@@ -152,7 +152,7 @@ impl From<Addr> for u16 {
 /// Hex digit
 ///
 /// Valid values are within `0x0` .. `0xF`.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Nibble(u8);
 
 impl From<u8> for Nibble {
@@ -162,7 +162,7 @@ impl From<u8> for Nibble {
 }
 
 /// Byte code instruction
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Instruction {
     /// Jumps to machine routine at `Addr`
     ///
