@@ -64,6 +64,7 @@ pub struct VM<R: Rng> {
     registers: Registers,
     rng: R,
     sys_fn: fn(&mut Self, crate::instructions::Addr) -> crate::errors::Result<()>,
+    keypad: crate::keypad::Keypad,
 }
 
 impl Default for VM<rand::rngs::ThreadRng> {
@@ -92,6 +93,7 @@ where
             registers: Registers::new(),
             rng,
             sys_fn,
+            keypad: crate::keypad::Keypad::default(),
         }
     }
 

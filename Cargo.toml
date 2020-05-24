@@ -10,6 +10,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 thiserror = "1.0.18"
 rand = "0.7.3"
+bitflags = "1.2.1"
 
 [dev-dependencies]
 bufrng = "1.0.2"
