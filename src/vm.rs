@@ -58,126 +58,134 @@ impl IndexMut<VRegister> for Registers {
     }
 }
 
-/// Virtual machine
-//#[derive(Debug)]
-pub struct VM<R: Rng> {
+pub struct VMState<R: Rng> {
     registers: Registers,
     rng: R,
-    sys_fn: fn(&mut Self, crate::instructions::Addr),
 }
 
-impl VM<rand::rngs::ThreadRng> {
+/// Virtual machine
+//#[derive(Debug)]
+pub struct VM<'vm, R: Rng> {
+    state: VMState<R>,
+    sys_fn: Box<dyn FnMut(&mut VMState<R>, crate::instructions::Addr) + 'vm>,
+}
+
+impl<'vm> VM<'vm, rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
     #[must_use]
     pub fn new() -> Self {
-        Self::with_rng(rand::thread_rng())
+        Self::with_rng(rand::thread_rng(), Box::new(|_, _| {}))
     }
 }
 
-impl<R> VM<R>
+impl<'vm, R> VM<'vm, R>
 where
     R: rand::Rng,
 {
     /// Creates a new instance with the given RNG
     #[must_use]
-    pub fn with_rng(rng: R) -> Self {
+    pub fn with_rng(
+        rng: R,
+        sys_fn: Box<dyn FnMut(&mut VMState<R>, crate::instructions::Addr) + 'vm>,
+    ) -> Self {
         Self {
-            registers: Registers::new(),
-            rng: rng,
-            sys_fn: |_vm, addr| {
-                println!("SYS {:?}", addr);
+            state: VMState {
+                registers: Registers::new(),
+                rng: rng,
             },
+            sys_fn,
         }
     }
 
     fn execute_instruction(&mut self, instruction: &Instruction) {
         match *instruction {
-            Instruction::Sys(addr) => (self.sys_fn)(self, addr),
+            Instruction::Sys(addr) => (self.sys_fn)(&mut self.state, addr),
             // Clear
             // Return
-            Instruction::Jump(addr) => self.registers.pc = addr.into(),
+            Instruction::Jump(addr) => self.state.registers.pc = addr.into(),
             // Call(Addr)
             Instruction::SkipEqualOperand(vx, byte) => {
-                if self.registers[vx] == byte {
-                    self.registers.pc += 2;
+                if self.state.registers[vx] == byte {
+                    self.state.registers.pc += 2;
                 }
             }
             Instruction::SkipNotEqualOperand(vx, byte) => {
-                if self.registers[vx] != byte {
-                    self.registers.pc += 2;
+                if self.state.registers[vx] != byte {
+                    self.state.registers.pc += 2;
                 }
             }
             Instruction::SkipEqual(vx, vy) => {
-                if self.registers[vx] == self.registers[vy] {
-                    self.registers.pc += 2
+                if self.state.registers[vx] == self.state.registers[vy] {
+                    self.state.registers.pc += 2
                 }
             }
-            Instruction::LoadOperand(vx, byte) => self.registers[vx] = byte,
+            Instruction::LoadOperand(vx, byte) => self.state.registers[vx] = byte,
             Instruction::AddOperand(vx, byte) => {
-                self.registers[vx] = self.registers[vx].wrapping_add(byte)
+                self.state.registers[vx] = self.state.registers[vx].wrapping_add(byte)
             }
-            Instruction::Load(vx, vy) => self.registers[vx] = self.registers[vy],
-            Instruction::Or(vx, vy) => self.registers[vx] |= self.registers[vy],
-            Instruction::And(vx, vy) => self.registers[vx] &= self.registers[vy],
-            Instruction::XOr(vx, vy) => self.registers[vx] ^= self.registers[vy],
+            Instruction::Load(vx, vy) => self.state.registers[vx] = self.state.registers[vy],
+            Instruction::Or(vx, vy) => self.state.registers[vx] |= self.state.registers[vy],
+            Instruction::And(vx, vy) => self.state.registers[vx] &= self.state.registers[vy],
+            Instruction::XOr(vx, vy) => self.state.registers[vx] ^= self.state.registers[vy],
             Instruction::Add(vx, vy) => {
-                let x = self.registers[vx] as u16;
-                let y = self.registers[vy] as u16;
+                let x = self.state.registers[vx] as u16;
+                let y = self.state.registers[vy] as u16;
 
                 let res = x + y;
 
                 // VF is carryover
-                self.registers[VRegister::VF] =
+                self.state.registers[VRegister::VF] =
                     (res > VRegisterValue::MAX as u16) as VRegisterValue;
 
-                self.registers[vx] = res as VRegisterValue;
+                self.state.registers[vx] = res as VRegisterValue;
             }
             Instruction::Sub(vx, vy) => {
-                let x = self.registers[vx];
-                let y = self.registers[vy];
+                let x = self.state.registers[vx];
+                let y = self.state.registers[vy];
 
                 // VF is Not Borrow i.e. x > y
-                self.registers[VRegister::VF] = (x > y) as VRegisterValue;
+                self.state.registers[VRegister::VF] = (x > y) as VRegisterValue;
 
-                self.registers[vx] = x.wrapping_sub(y);
+                self.state.registers[vx] = x.wrapping_sub(y);
             }
             Instruction::ShiftRight(vx, vy) => {
-                let y = self.registers[vy];
+                let y = self.state.registers[vy];
 
                 // VF is LSB before shift
-                self.registers[VRegister::VF] = y & 0x1;
+                self.state.registers[VRegister::VF] = y & 0x1;
 
-                self.registers[vx] = y >> 1;
+                self.state.registers[vx] = y >> 1;
             }
             Instruction::SubNegated(vx, vy) => {
-                let x = self.registers[vx];
-                let y = self.registers[vy];
+                let x = self.state.registers[vx];
+                let y = self.state.registers[vy];
 
                 // VF is not borrow i.e. y > x
-                self.registers[VRegister::VF] = (y > x) as VRegisterValue;
+                self.state.registers[VRegister::VF] = (y > x) as VRegisterValue;
 
-                self.registers[vx] = y.wrapping_sub(x);
+                self.state.registers[vx] = y.wrapping_sub(x);
             }
             Instruction::ShiftLeft(vx, vy) => {
-                let y = self.registers[vy];
+                let y = self.state.registers[vy];
 
                 // VF is MSB before shift
-                self.registers[VRegister::VF] = y >> 7;
+                self.state.registers[VRegister::VF] = y >> 7;
 
-                self.registers[vx] = y << 1;
+                self.state.registers[vx] = y << 1;
             }
             Instruction::SkipNotEqual(vx, vy) => {
-                if self.registers[vx] != self.registers[vy] {
-                    self.registers.pc += 2
+                if self.state.registers[vx] != self.state.registers[vy] {
+                    self.state.registers.pc += 2
                 }
             }
-            Instruction::LoadI(addr) => self.registers.i = addr.into(),
+            Instruction::LoadI(addr) => self.state.registers.i = addr.into(),
             Instruction::LongJump(addr) => {
                 let addr: PCRegisterValue = addr.into();
-                self.registers.pc = self.registers[VRegister::V0] as PCRegisterValue + addr;
+                self.state.registers.pc =
+                    self.state.registers[VRegister::V0] as PCRegisterValue + addr;
             }
             Instruction::Random(vx, byte) => {
-                self.registers[vx] = self.rng.gen::<VRegisterValue>() & byte
+                self.state.registers[vx] = self.state.rng.gen::<VRegisterValue>() & byte
             }
             // Draw(Vx, Vy, Nibble)
             // SkipKeyPressed(Vx)
@@ -186,7 +194,9 @@ where
             // LoadKey(Vx)
             // LoadDelayTimerRegister(Vx)
             // LoadSoundTimerRegister(Vx)
-            Instruction::AddI(vx) => self.registers.i += self.registers[vx] as IRegisterValue,
+            Instruction::AddI(vx) => {
+                self.state.registers.i += self.state.registers[vx] as IRegisterValue
+            }
             // LoadSprite(Vx)
             // LoadBinaryCodedDecimal(Vx)
             // LoadMemoryRegisters(Vx)
@@ -224,7 +234,7 @@ mod tests {
             fn $test_name() {
                 let mut vm = $crate::vm::VM::new();
                 $(
-                  vm.registers[$register_before] = $register_before_value;
+                  vm.state.registers[$register_before] = $register_before_value;
                 )+
                 //println!("Created VM: {:?}", vm);
 
@@ -233,20 +243,20 @@ mod tests {
 
                 $(
                     assert_eq!(
-                        vm.registers[$register_after],
+                        vm.state.registers[$register_after],
                         $register_after_value,
                         "register value {:?} expected {}, actual {}",
                         $register_after,
                         $register_after_value,
-                        vm.registers[$register_after],
+                        vm.state.registers[$register_after],
                     );
                 )+
                 assert_eq!(
-                    vm.registers[$crate::instructions::VRegister::VF],
+                    vm.state.registers[$crate::instructions::VRegister::VF],
                     $register_overflow_value,
                     "overflow expected {}, actual {}",
                     $register_overflow_value,
-                    vm.registers[$crate::instructions::VRegister::VF],
+                    vm.state.registers[$crate::instructions::VRegister::VF],
                 );
             }
         };
@@ -254,55 +264,62 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_sys() {
-        let mut vm = VM::new();
-
+        let called: std::cell::Cell<bool> = std::cell::Cell::new(false);
+        let mut vm = VM::with_rng(
+            rand::thread_rng(), Box::new(|state, addr| {
+                assert_eq!(0x0FFFu16, addr.into());
+                state.registers.pc = 0x42;
+                called.set(true);
+            })
+        );
         vm.execute_instruction(&Instruction::Sys(0x0FFF.into()));
 
-        // There's nothing useful to assert in the current implementation
+        assert!(called.get());
+        assert_eq!(vm.state.registers.pc, 0x42);
     }
 
     #[test]
     fn vm_execute_instruction_jump() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0;
+        vm.state.registers.pc = 0x0;
 
         vm.execute_instruction(&Instruction::Jump(0x0FFF.into()));
 
-        assert_eq!(vm.registers.pc, 0x0FFF);
+        assert_eq!(vm.state.registers.pc, 0x0FFF);
     }
 
     #[test]
     fn vm_execute_instruction_skipequaloperand() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0;
-        vm.registers[V0] = 0xFF;
+        vm.state.registers.pc = 0x0;
+        vm.state.registers[V0] = 0xFF;
 
         vm.execute_instruction(&Instruction::SkipEqualOperand(V0, 0xFF));
 
-        assert_eq!(vm.registers.pc, 0x0002);
+        assert_eq!(vm.state.registers.pc, 0x0002);
     }
 
     #[test]
     fn vm_execute_instruction_skipnotequaloperand() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0;
-        vm.registers[V0] = 0xFF;
+        vm.state.registers.pc = 0x0;
+        vm.state.registers[V0] = 0xFF;
 
         vm.execute_instruction(&Instruction::SkipNotEqualOperand(V0, 0xEE));
 
-        assert_eq!(vm.registers.pc, 0x0002);
+        assert_eq!(vm.state.registers.pc, 0x0002);
     }
 
     #[test]
     fn vm_execute_instruction_skipequal() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0;
-        vm.registers[V0] = 0xFF;
-        vm.registers[VF] = 0xFF;
+        vm.state.registers.pc = 0x0;
+        vm.state.registers[V0] = 0xFF;
+        vm.state.registers[VF] = 0xFF;
 
         vm.execute_instruction(&Instruction::SkipEqual(V0, VF));
 
-        assert_eq!(vm.registers.pc, 0x0002);
+        assert_eq!(vm.state.registers.pc, 0x0002);
     }
 
     registers_test!(
@@ -479,55 +496,55 @@ mod tests {
     #[test]
     fn vm_execute_instruction_skipnotequal() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0;
-        vm.registers[V0] = 0xFF;
-        vm.registers[VF] = 0xEE;
+        vm.state.registers.pc = 0x0;
+        vm.state.registers[V0] = 0xFF;
+        vm.state.registers[VF] = 0xEE;
 
         vm.execute_instruction(&Instruction::SkipNotEqual(V0, VF));
 
-        assert_eq!(vm.registers.pc, 0x0002);
+        assert_eq!(vm.state.registers.pc, 0x0002);
     }
 
     #[test]
     fn vm_execute_instruction_loadi() {
         let mut vm = VM::new();
-        vm.registers.i = 0xF0F0;
+        vm.state.registers.i = 0xF0F0;
 
         vm.execute_instruction(&LoadI(0x0AAA.into()));
 
-        assert_eq!(vm.registers.i, 0x0AAA);
+        assert_eq!(vm.state.registers.i, 0x0AAA);
     }
 
     #[test]
     fn vm_execute_instruction_longjump() {
         let mut vm = VM::new();
-        vm.registers.pc = 0x0111;
-        vm.registers[V0] = 0x11;
+        vm.state.registers.pc = 0x0111;
+        vm.state.registers[V0] = 0x11;
 
         vm.execute_instruction(&LongJump(0x0111.into()));
 
-        assert_eq!(vm.registers.pc, 0x0122);
+        assert_eq!(vm.state.registers.pc, 0x0122);
     }
 
     #[test]
     fn vm_execute_instruction_addi() {
         let mut vm = VM::new();
-        vm.registers[V0] = 0x1;
-        vm.registers.i = 0x0AAA;
+        vm.state.registers[V0] = 0x1;
+        vm.state.registers.i = 0x0AAA;
 
         vm.execute_instruction(&AddI(V0));
 
-        assert_eq!(vm.registers.i, 0x0AAB);
+        assert_eq!(vm.state.registers.i, 0x0AAB);
     }
 
     #[test]
     fn vm_execute_instruction_random() {
         let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
-        let mut vm = VM::with_rng(rng);
-        vm.registers[V0] = 0x00;
+        let mut vm = VM::with_rng(rng, Box::new(|_, _| {}));
+        vm.state.registers[V0] = 0x00;
 
         vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000));
 
-        assert_eq!(vm.registers[V0], 0b1000_0000);
+        assert_eq!(vm.state.registers[V0], 0b1000_0000);
     }
 }
