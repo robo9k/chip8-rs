@@ -20,6 +20,10 @@
 <span id="20">20</span>
 <span id="21">21</span>
 <span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Crate error types</span>
 
@@ -39,6 +43,10 @@
     <span class="doccomment">/// Known but unimplemented instruction</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;unimplemented instruction {0:?}&quot;</span>)]</span>
     <span class="ident">UnimplementedInstruction</span>(<span class="kw">crate</span>::<span class="ident">instructions</span>::<span class="ident">Instruction</span>),
+
+    <span class="doccomment">/// Invalid key definition</span>
+    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;invalid key {0:?}&quot;</span>)]</span>
+    <span class="ident">InvalidKey</span>(<span class="ident">u8</span>),
 }
 
 <span class="doccomment">/// Result alias</span>
