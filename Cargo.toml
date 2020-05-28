@@ -12,6 +12,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["chip-8", "chip8"]
 categories = ["emulators", "parser-implementations"]
 build = "build.rs"
+include = ["src/**/*", "LICENSE-*", "COPYRIGHT", "build.rs"]
 
 [dependencies]
 thiserror = "1.0.18"
