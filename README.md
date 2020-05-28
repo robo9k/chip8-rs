@@ -8,6 +8,7 @@
 [![crate version](https://img.shields.io/crates/v/chip_8)](https://crates.io/crates/chip_8)
 [![docs](https://docs.rs/chip_8/badge.svg)](https://docs.rs/chip_8)
 [![crate license](https://img.shields.io/crates/l/chip_8)](https://github.com/robo9k/chip8-rs/blob/master/COPYRIGHT)
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
 ## Example
 

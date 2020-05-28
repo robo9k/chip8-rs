@@ -2,6 +2,7 @@
 
 #![doc(html_root_url = "https://docs.rs/chip_8/0.2.0")]
 #![warn(missing_docs)]
+#![forbid(unsafe_code)]
 
 pub mod errors;
 pub mod instructions;
