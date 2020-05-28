@@ -30,3 +30,6 @@ skeptic = "0.13"
 [badges]
 codecov = { repository = "robo9k/chip8-rs" }
 maintenance = { status = "experimental" }
+
+[package.metadata.docs.rs]
+targets = []
