@@ -21,6 +21,7 @@ rand = "0.7.3"
 bufrng = "1.0.2"
 version-sync = "0.9"
 skeptic = "0.13"
+proptest = "0.10.0"
 
 [build-dependencies]
 skeptic = "0.13"

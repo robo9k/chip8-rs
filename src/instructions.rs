@@ -330,9 +330,9 @@ impl Instruction {
         let kk = (bits & 0x00FF) as u8;
 
         match high_nibble {
-            0x0 => match kk {
-                0xE0 => Ok(Clear),
-                0xEE => Ok(Return),
+            0x0 => match nnn {
+                0x0E0 => Ok(Clear),
+                0x0EE => Ok(Return),
                 _ => Ok(Sys(nnn.into())),
             },
             0x1 => Ok(Jump(nnn.into())),
@@ -394,11 +394,73 @@ impl Instruction {
             _ => Err(Chip8Error::UnknownInstruction(bits)),
         }
     }
+
+    /// Encodes a valid `Instruction` into raw bits
+    pub fn encode(&self) -> u16 {
+        fn x(reg: VRegister) -> u16 {
+            (reg as u16) << 8
+        }
+
+        fn y(reg: VRegister) -> u16 {
+            (reg as u16) << 4
+        }
+
+        fn kk(byte: Byte) -> u16 {
+            byte as u16
+        }
+
+        fn nnn(addr: Addr) -> u16 {
+            addr.0 as u16
+        }
+
+        fn n(nibble: Nibble) -> u16 {
+            nibble.0 as u16
+        }
+
+        match *self {
+            Self::Sys(addr) => 0x0000 | nnn(addr),
+            Self::Clear => 0x00E0,
+            Self::Return => 0x00EE,
+            Self::Jump(addr) => 0x1000 | nnn(addr),
+            Self::Call(addr) => 0x2000 | nnn(addr),
+            Self::SkipEqualOperand(vx, byte) => 0x3000 | x(vx) | kk(byte),
+            Self::SkipNotEqualOperand(vx, byte) => 0x4000 | x(vx) | kk(byte),
+            Self::SkipEqual(vx, vy) => 0x5000 | x(vx) | y(vy) | 0x0,
+            Self::LoadOperand(vx, byte) => 0x6000 | x(vx) | kk(byte),
+            Self::AddOperand(vx, byte) => 0x7000 | x(vx) | kk(byte),
+            Self::Load(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x0,
+            Self::Or(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x1,
+            Self::And(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x2,
+            Self::XOr(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x3,
+            Self::Add(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x4,
+            Self::Sub(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x5,
+            Self::ShiftRight(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x6,
+            Self::SubNegated(vx, vy) => 0x8000 | x(vx) | y(vy) | 0x7,
+            Self::ShiftLeft(vx, vy) => 0x8000 | x(vx) | y(vy) | 0xE,
+            Self::SkipNotEqual(vx, vy) => 0x9000 | x(vx) | y(vy) | 0x0,
+            Self::LoadI(addr) => 0xA000 | nnn(addr),
+            Self::LongJump(addr) => 0xB000 | nnn(addr),
+            Self::Random(vx, byte) => 0xC000 | x(vx) | kk(byte),
+            Self::Draw(vx, vy, nibble) => 0xD000 | x(vx) | y(vy) | n(nibble),
+            Self::SkipKeyPressed(vx) => 0xE000 | x(vx) | 0x9E,
+            Self::SkipKeyNotPressed(vx) => 0xE000 | x(vx) | 0xA1,
+            Self::LoadRegisterDelayTimer(vx) => 0xF000 | x(vx) | 0x07,
+            Self::LoadKey(vx) => 0xF000 | x(vx) | 0x0A,
+            Self::LoadDelayTimerRegister(vx) => 0xF000 | x(vx) | 0x15,
+            Self::LoadSoundTimerRegister(vx) => 0xF000 | x(vx) | 0x18,
+            Self::AddI(vx) => 0xF000 | x(vx) | 0x1E,
+            Self::LoadSprite(vx) => 0xF000 | x(vx) | 0x29,
+            Self::LoadBinaryCodedDecimal(vx) => 0xF000 | x(vx) | 0x33,
+            Self::LoadMemoryRegisters(vx) => 0xF000 | x(vx) | 0x55,
+            Self::LoadRegistersMemory(vx) => 0xF000 | x(vx) | 0x65,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
 
     #[test]
     fn vregister_tryfrom_ok() {
@@ -710,5 +772,17 @@ mod tests {
         ]
         .iter()
         .map(|r| *r)));
+    }
+
+    proptest! {
+        #[test]
+        fn instruction_decode_encode(bits in u16::MIN..=u16::MAX) {
+            let decoded = Instruction::decode(bits);
+            if let Ok(decoded) = decoded  {
+                println!("{:0>#06X} decoded: {:?}", bits, decoded);
+                let encoded = decoded.encode();
+                prop_assert_eq!(bits, encoded, "bits = {:0>#06X}, encoded = {:0>#06X}", bits, encoded);
+            }
+        }
     }
 }
