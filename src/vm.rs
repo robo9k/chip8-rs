@@ -224,7 +224,14 @@ where
 
                 self.registers.i = Addr::new(self.registers.i + vx as u16 + 1)?.into();
             }
-            // LoadRegistersMemory(Vx)
+            Instruction::LoadRegistersMemory(vx) => {
+                for (offs, reg) in VRegister::iter_to(vx).enumerate() {
+                    let addr = Addr::new(self.registers.i + offs as u16)?;
+                    self.registers[reg] = self.memory.read(addr);
+                }
+
+                self.registers.i = Addr::new(self.registers.i + vx as u16 + 1)?.into();
+            }
             other => return Err(crate::errors::Chip8Error::UnimplementedInstruction(other)),
         }
         Ok(())
@@ -635,7 +642,7 @@ mod tests {
     }
 
     #[test]
-    fn vm_execute_instruction_loadmemoryeegisters_all() -> crate::errors::Result<()> {
+    fn vm_execute_instruction_loadmemoryregisters_all() -> crate::errors::Result<()> {
         let mut vm = VM::default();
         vm.registers[V0] = 0x0;
         vm.registers[V1] = 0x1;
@@ -678,7 +685,7 @@ mod tests {
     }
 
     #[test]
-    fn vm_execute_instruction_loadmemoryeegisters_one() -> crate::errors::Result<()> {
+    fn vm_execute_instruction_loadmemoryregisters_one() -> crate::errors::Result<()> {
         let mut vm = VM::default();
         vm.registers[V0] = 0xAA;
         vm.registers[V1] = 0xBB;
@@ -688,6 +695,64 @@ mod tests {
 
         assert_eq!(vm.memory.read((0x0111 + 0).into()), 0xAA);
         assert_eq!(vm.memory.read((0x0111 + 1).into()), 0x00);
+        assert_eq!(vm.registers.i, 0x0111 + 1);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_loadregistersmemory_all() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers.i = 0x0111;
+        vm.memory.write((0x0111 + 0x0).into(), 0x0);
+        vm.memory.write((0x0111 + 0x1).into(), 0x1);
+        vm.memory.write((0x0111 + 0x2).into(), 0x2);
+        vm.memory.write((0x0111 + 0x3).into(), 0x3);
+        vm.memory.write((0x0111 + 0x4).into(), 0x4);
+        vm.memory.write((0x0111 + 0x5).into(), 0x5);
+        vm.memory.write((0x0111 + 0x6).into(), 0x6);
+        vm.memory.write((0x0111 + 0x7).into(), 0x7);
+        vm.memory.write((0x0111 + 0x8).into(), 0x8);
+        vm.memory.write((0x0111 + 0x9).into(), 0x9);
+        vm.memory.write((0x0111 + 0xA).into(), 0xA);
+        vm.memory.write((0x0111 + 0xB).into(), 0xB);
+        vm.memory.write((0x0111 + 0xC).into(), 0xC);
+        vm.memory.write((0x0111 + 0xD).into(), 0xD);
+        vm.memory.write((0x0111 + 0xE).into(), 0xE);
+        vm.memory.write((0x0111 + 0xF).into(), 0xF);
+
+        vm.execute_instruction(&LoadRegistersMemory(VF))?;
+
+        assert_eq!(vm.registers[V0], 0x0);
+        assert_eq!(vm.registers[V1], 0x1);
+        assert_eq!(vm.registers[V2], 0x2);
+        assert_eq!(vm.registers[V3], 0x3);
+        assert_eq!(vm.registers[V4], 0x4);
+        assert_eq!(vm.registers[V5], 0x5);
+        assert_eq!(vm.registers[V6], 0x6);
+        assert_eq!(vm.registers[V7], 0x7);
+        assert_eq!(vm.registers[V8], 0x8);
+        assert_eq!(vm.registers[V9], 0x9);
+        assert_eq!(vm.registers[VA], 0xA);
+        assert_eq!(vm.registers[VB], 0xB);
+        assert_eq!(vm.registers[VC], 0xC);
+        assert_eq!(vm.registers[VD], 0xD);
+        assert_eq!(vm.registers[VE], 0xE);
+        assert_eq!(vm.registers[VF], 0xF);
+        assert_eq!(vm.registers.i, 0x0111 + 0xF + 1);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_loadregistersmemory_one() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers.i = 0x0111;
+        vm.memory.write((0x0111 + 0x0).into(), 0x0);
+        vm.memory.write((0x0111 + 0x1).into(), 0x1);
+
+        vm.execute_instruction(&LoadRegistersMemory(V0))?;
+
+        assert_eq!(vm.registers[V0], 0x0);
+        assert_eq!(vm.registers[V1], 0x0);
         assert_eq!(vm.registers.i, 0x0111 + 1);
         Ok(())
     }
