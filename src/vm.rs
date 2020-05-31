@@ -215,7 +215,16 @@ where
             // LoadSoundTimerRegister(Vx)
             Instruction::AddI(vx) => self.registers.i += self.registers[vx] as IRegisterValue,
             // LoadSprite(Vx)
-            // LoadBinaryCodedDecimal(Vx)
+            Instruction::LoadBinaryCodedDecimal(vx) => {
+                let mut num = self.registers[vx];
+
+                for (i, place) in vec![100, 10, 1].iter().enumerate() {
+                    let bcd = num / place;
+                    self.memory
+                        .write(Addr::new(self.registers.i + i as u16)?, bcd);
+                    num -= bcd * place;
+                }
+            }
             Instruction::LoadMemoryRegisters(vx) => {
                 for (offs, reg) in VRegister::iter_to(vx).enumerate() {
                     let addr = Addr::new(self.registers.i + offs as u16)?;
@@ -638,6 +647,20 @@ mod tests {
         vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000))?;
 
         assert_eq!(vm.registers[V0], 0b1000_0000);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_loadbinarycodeddecimal() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers[V0] = 123;
+        vm.registers.i = 0x0111;
+
+        vm.execute_instruction(&Instruction::LoadBinaryCodedDecimal(V0))?;
+
+        assert_eq!(vm.memory.read((0x0111 + 0x0).into()), 1);
+        assert_eq!(vm.memory.read((0x0111 + 0x1).into()), 2);
+        assert_eq!(vm.memory.read((0x0111 + 0x2).into()), 3);
         Ok(())
     }
 
