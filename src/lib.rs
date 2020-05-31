@@ -7,6 +7,7 @@
 pub mod errors;
 pub mod instructions;
 pub mod keypad;
+pub mod memory;
 pub mod vm;
 
 #[cfg(test)]

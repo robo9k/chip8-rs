@@ -20,6 +20,10 @@ pub enum Chip8Error {
     /// Invalid key definition
     #[error("invalid key {0:?}")]
     InvalidKey(u8),
+
+    /// Value is out of valid range
+    #[error("out of range {0:?}")]
+    OutOfRange(u16),
 }
 
 /// Result alias

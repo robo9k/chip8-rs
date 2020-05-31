@@ -137,6 +137,21 @@ pub type Byte = u8;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Addr(u16);
 
+impl Addr {
+    /// Creates a new instance if `bits` is valid
+    /// # Errors
+    ///
+    /// Will return [`Chip8Error::OutOfRange`](crate::errors::Chip8Error::OutOfRange)
+    /// if given `bits` are out of range for an `Addr`.
+    pub fn new(bits: u16) -> crate::errors::Result<Self> {
+        if bits > 0x0FFF {
+            Err(Chip8Error::OutOfRange(bits))
+        } else {
+            Ok(Self(bits & 0x0FFF))
+        }
+    }
+}
+
 impl From<u16> for Addr {
     fn from(bits: u16) -> Self {
         Self(bits & 0x0FFF)
@@ -146,6 +161,12 @@ impl From<u16> for Addr {
 impl From<Addr> for u16 {
     fn from(addr: Addr) -> u16 {
         addr.0
+    }
+}
+
+impl From<Addr> for usize {
+    fn from(addr: Addr) -> usize {
+        addr.0 as usize
     }
 }
 
