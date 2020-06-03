@@ -1,5 +1,6 @@
 //! Virtual machine
 
+use crate::display::Display;
 use crate::instructions::{Addr, Instruction, VRegister};
 use crate::keypad::{Key, KeyState};
 use crate::memory::Memory;
@@ -70,6 +71,7 @@ pub struct VM<R: Rng> {
     keypad: crate::keypad::Keypad,
     waiting_on_any_keypress: Option<VRegister>,
     memory: Memory,
+    display: Display,
 }
 
 impl Default for VM<rand::rngs::ThreadRng> {
@@ -101,6 +103,7 @@ where
             keypad: crate::keypad::Keypad::default(),
             waiting_on_any_keypress: None,
             memory: Memory::default(),
+            display: Display::default(),
         }
     }
 
@@ -108,7 +111,7 @@ where
     fn execute_instruction(&mut self, instruction: &Instruction) -> crate::errors::Result<()> {
         match *instruction {
             Instruction::Sys(addr) => return (self.sys_fn)(self, addr),
-            // Clear
+            Instruction::Clear => self.display.clear(),
             // Return
             Instruction::Jump(addr) => self.registers.pc = addr.into(),
             // Call(Addr)
