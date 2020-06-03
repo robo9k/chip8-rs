@@ -15,6 +15,21 @@ impl Default for Pixel {
     }
 }
 
+impl std::ops::BitXorAssign for Pixel {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        *self = match self {
+            Self::Off => match rhs {
+                Self::Off => Self::Off,
+                Self::On => Self::On,
+            },
+            Self::On => match rhs {
+                Self::Off => Self::On,
+                Self::On => Self::Off,
+            },
+        }
+    }
+}
+
 impl std::fmt::Display for Pixel {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -25,48 +40,81 @@ impl std::fmt::Display for Pixel {
 }
 
 /// Result from drawing a sprite.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DrawResult {
-    /// Some pixels were erased while drawing
-    PixelsOff,
     /// Pixels were only set to `On` state
-    PixelsOn,
+    Drawn,
+    /// Some pixels were erased while drawing
+    Overdrawn,
+}
+
+/// X coordinate of a `Pixel` on the `Display`
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct XCoordinate(usize);
+/// Y coordinate of a `Pixel` on the `Display`
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct YCoordinate(usize);
+
+impl XCoordinate {
+    /// Returns a new x coordinate that might have wrapped around the display
+    pub const fn wrapping_add(self, rhs: usize) -> Self {
+        Self((self.0 + rhs) % Display::WIDTH)
+    }
+}
+
+impl YCoordinate {
+    /// Returns a new y coordinate that might have wrapped around the display
+    pub const fn wrapping_add(self, rhs: usize) -> Self {
+        Self((self.0 + rhs) % Display::HEIGHT)
+    }
 }
 
 /// Display with 64 * 32 monochrome pixels
 pub struct Display {
-    pixels: [Pixel; Display::PIXELS],
+    pixels: [[Pixel; Display::HEIGHT]; Display::WIDTH],
 }
-
-/// X coordinate of a `Pixel` on the `Display`
-pub struct XCoordinate(usize);
-/// Y coordinate of a `Pixel` on the `Display`
-pub struct YCoordinate(usize);
 
 impl Display {
     /// Horizontal pixel count
     pub const WIDTH: usize = 64;
     /// Vertical pixel count
     pub const HEIGHT: usize = 32;
-    ///Total number of pixels
-    pub const PIXELS: usize = Self::WIDTH * Self::HEIGHT;
 
     /// Clears the display by setting all pixels to the `Off` state
     pub fn clear(&mut self) {
-        for pixel in self.pixels.iter_mut() {
-            *pixel = Pixel::Off;
+        for x in 0..Self::WIDTH {
+            for y in 0..Self::HEIGHT {
+                self.pixels[x][y] = Pixel::Off;
+            }
         }
     }
 
     /// Draw `sprite` at the given `x` + `y` coordinates
-    pub fn draw(&mut self, _sprite: Sprite, _x: XCoordinate, _y: YCoordinate) -> DrawResult {
-        todo!();
+    pub fn draw(&mut self, sprite: &Sprite, x: XCoordinate, y: YCoordinate) -> DrawResult {
+        let mut x = x;
+        let mut y = y;
+        let mut res = DrawResult::Drawn;
+        for row in &sprite.rows {
+            for pixel in &row.0 {
+                if self.pixels[x.0][y.0] == Pixel::On && *pixel == Pixel::On {
+                    res = DrawResult::Overdrawn;
+                }
+
+                self.pixels[x.0][y.0] ^= *pixel;
+
+                x = x.wrapping_add(1);
+            }
+            y = y.wrapping_add(1);
+        }
+
+        res
     }
 }
 
 impl Default for Display {
     fn default() -> Self {
         Self {
-            pixels: [Pixel::default(); Self::PIXELS],
+            pixels: [[Pixel::default(); Self::HEIGHT]; Self::WIDTH],
         }
     }
 }
@@ -163,14 +211,72 @@ mod tests {
     use super::*;
 
     #[test]
+    fn pixel_xor() {
+        let mut pixel = Pixel::Off;
+        pixel ^= Pixel::Off;
+        assert_eq!(pixel, Pixel::Off);
+
+        let mut pixel = Pixel::Off;
+        pixel ^= Pixel::On;
+        assert_eq!(pixel, Pixel::On);
+
+        let mut pixel = Pixel::On;
+        pixel ^= Pixel::On;
+        assert_eq!(pixel, Pixel::Off);
+
+        let mut pixel = Pixel::On;
+        pixel ^= Pixel::Off;
+        assert_eq!(pixel, Pixel::On);
+    }
+
+    #[test]
+    fn xcoordinate_wrappingadd() {
+        let x = XCoordinate(Display::WIDTH);
+
+        assert_eq!(XCoordinate(2), x.wrapping_add(2));
+    }
+
+    #[test]
+    fn ycoordinate_wrappingadd() {
+        let x = YCoordinate(Display::HEIGHT - 1);
+
+        assert_eq!(YCoordinate(1), x.wrapping_add(2));
+    }
+
+    #[test]
     fn display_clear() {
         let mut display = Display::default();
 
         display.clear();
 
-        for pixel in display.pixels.iter() {
-            assert_eq!(*pixel, Pixel::Off);
+        for x in 0..Display::WIDTH {
+            for y in 0..Display::HEIGHT {
+                assert_eq!(display.pixels[x][y], Pixel::Off);
+            }
         }
+    }
+
+    #[test]
+    fn display_draw_drawn() {
+        let mut display = Display::default();
+        let data = [0b1111_0000, 0b0000_1111];
+        let sprite: Sprite = data[..].into();
+
+        let res = display.draw(&sprite, XCoordinate(Display::WIDTH - 7), YCoordinate(0));
+
+        assert_eq!(res, DrawResult::Drawn);
+    }
+
+    #[test]
+    fn display_draw_overdrawn() {
+        let mut display = Display::default();
+        let data = [0b1111_0000, 0b0000_1111];
+        let sprite: Sprite = data[..].into();
+
+        display.draw(&sprite, XCoordinate(Display::WIDTH - 7), YCoordinate(0));
+        let res = display.draw(&sprite, XCoordinate(Display::WIDTH - 7), YCoordinate(0));
+
+        assert_eq!(res, DrawResult::Overdrawn);
     }
 
     #[test]
