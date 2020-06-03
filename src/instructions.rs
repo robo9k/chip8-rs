@@ -182,6 +182,12 @@ impl From<u8> for Nibble {
     }
 }
 
+impl From<Nibble> for usize {
+    fn from(nibble: Nibble) -> Self {
+        nibble.0 as usize
+    }
+}
+
 /// Byte code instruction
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Instruction {

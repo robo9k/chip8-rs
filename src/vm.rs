@@ -1,6 +1,6 @@
 //! Virtual machine
 
-use crate::display::Display;
+use crate::display::{Display, DrawResult, XCoordinate, YCoordinate};
 use crate::instructions::{Addr, Instruction, VRegister};
 use crate::keypad::{Key, KeyState};
 use crate::memory::Memory;
@@ -197,7 +197,22 @@ where
             Instruction::Random(vx, byte) => {
                 self.registers[vx] = self.rng.gen::<VRegisterValue>() & byte
             }
-            // Draw(Vx, Vy, Nibble)
+            Instruction::Draw(vx, vy, nibble) => {
+                let x = XCoordinate::new(vx as usize);
+                let y = YCoordinate::new(vy as usize);
+
+                let mut sprite_data = Vec::with_capacity(nibble.into());
+                for offs in 0..nibble.into() {
+                    let addr = Addr::new(self.registers.i + offs as u16)?;
+                    sprite_data.push(self.memory.read(addr));
+                }
+                let sprite = &sprite_data[..].into();
+                let draw_result = self.display.draw(sprite, x, y);
+                self.registers[VRegister::VF] = match draw_result {
+                    DrawResult::Drawn => 0,
+                    DrawResult::Overdrawn => 1,
+                };
+            }
             Instruction::SkipKeyPressed(vx) => {
                 let key_idx = self.registers[vx];
                 let key = Key::try_from(key_idx)?;
@@ -650,6 +665,25 @@ mod tests {
         vm.execute_instruction(&Instruction::Random(V0, 0b1100_0000))?;
 
         assert_eq!(vm.registers[V0], 0b1000_0000);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_draw() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers[V0] = 0xF;
+        vm.registers[V1] = 0x0;
+        vm.registers.i = 0x0111;
+        vm.memory.write((0x0111 + 0).into(), 0b11111111);
+        vm.memory.write((0x0111 + 1).into(), 0b10000000);
+        vm.memory.write((0x0111 + 2).into(), 0b11111100);
+        vm.memory.write((0x0111 + 3).into(), 0b10000000);
+        vm.memory.write((0x0111 + 4).into(), 0b10000000);
+
+        vm.execute_instruction(&Instruction::Draw(V0, V1, 5.into()))?;
+        vm.execute_instruction(&Instruction::Draw(V0, V1, 5.into()))?;
+
+        assert!(vm.registers[VF] != 0);
         Ok(())
     }
 

@@ -56,6 +56,11 @@ pub struct XCoordinate(usize);
 pub struct YCoordinate(usize);
 
 impl XCoordinate {
+    /// Creates a new instance, wrapping around the display if needed
+    pub fn new(x: usize) -> Self {
+        Self(x % Display::WIDTH)
+    }
+
     /// Returns a new x coordinate that might have wrapped around the display
     pub const fn wrapping_add(self, rhs: usize) -> Self {
         Self((self.0 + rhs) % Display::WIDTH)
@@ -63,6 +68,11 @@ impl XCoordinate {
 }
 
 impl YCoordinate {
+    /// Creates a new instance, wrapping around the display if needed
+    pub fn new(y: usize) -> Self {
+        Self(y % Display::HEIGHT)
+    }
+
     /// Returns a new y coordinate that might have wrapped around the display
     pub const fn wrapping_add(self, rhs: usize) -> Self {
         Self((self.0 + rhs) % Display::HEIGHT)
@@ -230,10 +240,24 @@ mod tests {
     }
 
     #[test]
+    fn xcoordinate_new() {
+        let x = XCoordinate::new(Display::WIDTH + 1);
+
+        assert_eq!(XCoordinate(1), x);
+    }
+
+    #[test]
     fn xcoordinate_wrappingadd() {
         let x = XCoordinate(Display::WIDTH);
 
         assert_eq!(XCoordinate(2), x.wrapping_add(2));
+    }
+
+    #[test]
+    fn ycoordinate_new() {
+        let y = YCoordinate::new(Display::HEIGHT + 1);
+
+        assert_eq!(YCoordinate(1), y);
     }
 
     #[test]
