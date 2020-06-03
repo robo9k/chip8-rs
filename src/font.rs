@@ -1,299 +1,216 @@
 //! ROM built-in font sprites
 
 /// Number of rows for a font sprite
-const FONT_SPRITE_ROWS: usize = 5;
+pub(crate) const FONT_SPRITE_ROWS: usize = 5;
 
 /// Font sprite data for `0`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_0: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10010000,
-    0b10010000,
-    0b10010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_0: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10010000, 0b10010000, 0b10010000, 0b11110000];
 
 /// Font sprite data for `1`
-/// 
-/// ```
+///
+/// ```plain
 /// ░░▓░░░░░
 /// ░▓▓░░░░░
 /// ░░▓░░░░░
 /// ░░▓░░░░░
 /// ░▓▓▓░░░░
 /// /// ```
-const SPRITE_1: [u8; FONT_SPRITE_ROWS] = [
-    0b00100000,
-    0b01100000,
-    0b00100000,
-    0b00100000,
-    0b01110000,
-];
+pub(crate) const SPRITE_DATA_1: [u8; FONT_SPRITE_ROWS] =
+    [0b00100000, 0b01100000, 0b00100000, 0b00100000, 0b01110000];
 
 /// Font sprite data for `2`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_2: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b00010000,
-    0b11110000,
-    0b10000000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_2: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b00010000, 0b11110000, 0b10000000, 0b11110000];
 
 /// Font sprite data for `3`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_3: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b00010000,
-    0b11110000,
-    0b00010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_3: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b00010000, 0b11110000, 0b00010000, 0b11110000];
 
 /// Font sprite data for `4`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ░░░▓░░░░
 /// ```
-const SPRITE_4: [u8; FONT_SPRITE_ROWS] = [
-    0b10010000,
-    0b10010000,
-    0b11110000,
-    0b00010000,
-    0b00010000,
-];
+pub(crate) const SPRITE_DATA_4: [u8; FONT_SPRITE_ROWS] =
+    [0b10010000, 0b10010000, 0b11110000, 0b00010000, 0b00010000];
 
 /// Font sprite data for `5`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_5: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10000000,
-    0b11110000,
-    0b00010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_5: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10000000, 0b11110000, 0b00010000, 0b11110000];
 
 /// Font sprite data for `6`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_6: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10000000,
-    0b11110000,
-    0b10010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_6: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10000000, 0b11110000, 0b10010000, 0b11110000];
 
 /// Font sprite data for `7`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ░░▓░░░░░
 /// ░▓░░░░░░
 /// ░▓░░░░░░
 /// ```
-const SPRITE_7: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b00010000,
-    0b00100000,
-    0b01000000,
-    0b01000000,
-];
+pub(crate) const SPRITE_DATA_7: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b00010000, 0b00100000, 0b01000000, 0b01000000];
 
 /// Font sprite data for `8`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_8: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10010000,
-    0b11110000,
-    0b10010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_8: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10010000, 0b11110000, 0b10010000, 0b11110000];
 
 /// Font sprite data for `9`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ░░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_9: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10010000,
-    0b11110000,
-    0b00010000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_9: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10010000, 0b11110000, 0b00010000, 0b11110000];
 
 /// Font sprite data for `A`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ```
-const SPRITE_A: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10010000,
-    0b11110000,
-    0b10010000,
-    0b10010000,
-];
+pub(crate) const SPRITE_DATA_A: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10010000, 0b11110000, 0b10010000, 0b10010000];
 
 /// Font sprite data for `B`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓░░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓░░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓░░░░░
 /// ```
-const SPRITE_B: [u8; FONT_SPRITE_ROWS] = [
-    0b11100000,
-    0b10010000,
-    0b11100000,
-    0b10010000,
-    0b11100000,
-];
+pub(crate) const SPRITE_DATA_B: [u8; FONT_SPRITE_ROWS] =
+    [0b11100000, 0b10010000, 0b11100000, 0b10010000, 0b11100000];
 
 /// Font sprite data for `C`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓░░░░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_C: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10000000,
-    0b10000000,
-    0b10000000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_C: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10000000, 0b10000000, 0b10000000, 0b11110000];
 
 /// Font sprite data for `D`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓░░░░░
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ▓░░▓░░░░
 /// ▓▓▓░░░░░
 /// ```
-const SPRITE_D: [u8; FONT_SPRITE_ROWS] = [
-    0b11100000,
-    0b10010000,
-    0b10010000,
-    0b10010000,
-    0b11100000,
-];
+pub(crate) const SPRITE_DATA_D: [u8; FONT_SPRITE_ROWS] =
+    [0b11100000, 0b10010000, 0b10010000, 0b10010000, 0b11100000];
 
 /// Font sprite data for `E`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ```
-const SPRITE_E: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10000000,
-    0b11110000,
-    0b10000000,
-    0b11110000,
-];
+pub(crate) const SPRITE_DATA_E: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10000000, 0b11110000, 0b10000000, 0b11110000];
 
 /// Font sprite data for `F`
-/// 
-/// ```
+///
+/// ```plain
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓▓▓▓░░░░
 /// ▓░░░░░░░
 /// ▓░░░░░░░
 /// ```
-const SPRITE_F: [u8; FONT_SPRITE_ROWS] = [
-    0b11110000,
-    0b10000000,
-    0b11110000,
-    0b10000000,
-    0b10000000,
-];
+pub(crate) const SPRITE_DATA_F: [u8; FONT_SPRITE_ROWS] =
+    [0b11110000, 0b10000000, 0b11110000, 0b10000000, 0b10000000];
 
-const FONT: [[u8; FONT_SPRITE_ROWS]; 16] = [
-    SPRITE_0,
-    SPRITE_1,
-    SPRITE_2,
-    SPRITE_3,
-    SPRITE_4,
-    SPRITE_5,
-    SPRITE_6,
-    SPRITE_7,
-    SPRITE_8,
-    SPRITE_9,
-    SPRITE_A,
-    SPRITE_B,
-    SPRITE_C,
-    SPRITE_D,
-    SPRITE_E,
-    SPRITE_F,
-];
-
-fn font_as_bytes_iter() -> impl Iterator<Item=&'static u8> {
-    SPRITE_0.iter().chain(SPRITE_1.iter()).chain(SPRITE_2.iter()).chain(SPRITE_3.iter()).chain(SPRITE_4.iter()).chain(SPRITE_5.iter()).chain(SPRITE_6.iter()).chain(SPRITE_7.iter()).chain(SPRITE_8.iter()).chain(SPRITE_9.iter()).chain(SPRITE_A.iter()).chain(SPRITE_B.iter()).chain(SPRITE_C.iter()).chain(SPRITE_D.iter()).chain(SPRITE_E.iter()).chain(SPRITE_F.iter())
+pub(crate) fn font_as_bytes_iter() -> impl Iterator<Item = &'static u8> {
+    SPRITE_DATA_0
+        .iter()
+        .chain(SPRITE_DATA_1.iter())
+        .chain(SPRITE_DATA_2.iter())
+        .chain(SPRITE_DATA_3.iter())
+        .chain(SPRITE_DATA_4.iter())
+        .chain(SPRITE_DATA_5.iter())
+        .chain(SPRITE_DATA_6.iter())
+        .chain(SPRITE_DATA_7.iter())
+        .chain(SPRITE_DATA_8.iter())
+        .chain(SPRITE_DATA_9.iter())
+        .chain(SPRITE_DATA_A.iter())
+        .chain(SPRITE_DATA_B.iter())
+        .chain(SPRITE_DATA_C.iter())
+        .chain(SPRITE_DATA_D.iter())
+        .chain(SPRITE_DATA_E.iter())
+        .chain(SPRITE_DATA_F.iter())
 }

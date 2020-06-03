@@ -62,6 +62,8 @@ impl IndexMut<VRegister> for Registers {
     }
 }
 
+const FONT_RAW_ADDR: u16 = 0x0;
+
 /// Virtual machine
 //#[derive(Debug)]
 pub struct VM<R: Rng> {
@@ -96,7 +98,7 @@ where
         rng: R,
         sys_fn: fn(&mut Self, crate::instructions::Addr) -> crate::errors::Result<()>,
     ) -> Self {
-        Self {
+        let mut vm = Self {
             registers: Registers::new(),
             rng,
             sys_fn,
@@ -104,7 +106,14 @@ where
             waiting_on_any_keypress: None,
             memory: Memory::default(),
             display: Display::default(),
+        };
+
+        for (offs, font_byte) in crate::font::font_as_bytes_iter().enumerate() {
+            let addr = Addr::new(FONT_RAW_ADDR + offs as u16).expect("built-in font fits into RAM");
+            vm.memory.write(addr, *font_byte);
         }
+
+        vm
     }
 
     #[must_use]
@@ -232,7 +241,11 @@ where
             // LoadDelayTimerRegister(Vx)
             // LoadSoundTimerRegister(Vx)
             Instruction::AddI(vx) => self.registers.i += self.registers[vx] as IRegisterValue,
-            // LoadSprite(Vx)
+            Instruction::LoadSprite(vx) => {
+                let x = self.registers[vx] as u16;
+                self.registers.i =
+                    Addr::new(FONT_RAW_ADDR + x * crate::font::FONT_SPRITE_ROWS as u16)?.into();
+            }
             Instruction::LoadBinaryCodedDecimal(vx) => {
                 let mut num = self.registers[vx];
 
@@ -684,6 +697,28 @@ mod tests {
         vm.execute_instruction(&Instruction::Draw(V0, V1, 5.into()))?;
 
         assert!(vm.registers[VF] != 0);
+        Ok(())
+    }
+
+    #[test]
+    fn vm_execute_instruction_loadsprite() -> crate::errors::Result<()> {
+        let mut vm = VM::default();
+        vm.registers[V0] = 0xF;
+
+        vm.execute_instruction(&Instruction::LoadSprite(V0))?;
+
+        // This is actually an implementation detail
+        assert_eq!(
+            vm.registers.i,
+            FONT_RAW_ADDR + 0xF * crate::font::FONT_SPRITE_ROWS as u16
+        );
+        let mut sprite_data = vec![];
+        for offs in 0..crate::font::FONT_SPRITE_ROWS {
+            let addr = Addr::new(vm.registers.i + offs as u16)?;
+            let row = vm.memory.read(addr);
+            sprite_data.push(row);
+        }
+        assert_eq!(sprite_data[..], crate::font::SPRITE_DATA_F);
         Ok(())
     }
 

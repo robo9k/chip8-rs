@@ -5,8 +5,8 @@
 #![forbid(unsafe_code)]
 
 pub mod display;
-mod font;
 pub mod errors;
+mod font;
 pub mod instructions;
 pub mod keypad;
 pub mod memory;
