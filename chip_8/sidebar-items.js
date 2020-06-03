@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["errors","Crate error types"],["instructions","Machine language and byte code instructions"],["keypad","Keys and keypad"],["memory","Memory"],["vm","Virtual machine"]]});
+initSidebarItems({"mod":[["display","Display"],["errors","Crate error types"],["instructions","Machine language and byte code instructions"],["keypad","Keys and keypad"],["memory","Memory"],["vm","Virtual machine"]]});

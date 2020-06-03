@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["chip_8"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/bit/trait.BitXorAssign.html\" title=\"trait core::ops::bit::BitXorAssign\">BitXorAssign</a>&lt;<a class=\"enum\" href=\"chip_8/display/enum.Pixel.html\" title=\"enum chip_8::display::Pixel\">Pixel</a>&gt; for <a class=\"enum\" href=\"chip_8/display/enum.Pixel.html\" title=\"enum chip_8::display::Pixel\">Pixel</a>","synthetic":false,"types":["chip_8::display::Pixel"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

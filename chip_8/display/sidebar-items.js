@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["DrawResult","Result from drawing a sprite."],["Pixel","Monochrome pixel"]],"struct":[["Display","Display with 64 * 32 monochrome pixels"],["Sprite","Sprite of several rows of pixels"],["SpriteRow","Row of 8 pixels in a sprite"],["XCoordinate","X coordinate of a `Pixel` on the `Display`"],["YCoordinate","Y coordinate of a `Pixel` on the `Display`"]]});

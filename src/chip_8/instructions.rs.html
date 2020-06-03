@@ -807,6 +807,12 @@
 <span id="807">807</span>
 <span id="808">808</span>
 <span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Machine language and byte code instructions</span>
 
@@ -989,6 +995,12 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Nibble</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">bits</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>(<span class="ident">bits</span> <span class="op">&amp;</span> <span class="number">0xF</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Nibble</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">nibble</span>: <span class="ident">Nibble</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">nibble</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>
     }
 }
 
