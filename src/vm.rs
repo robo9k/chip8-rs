@@ -5,8 +5,9 @@ use crate::instructions::{Addr, Instruction, VRegister};
 use crate::keypad::{Key, KeyState};
 use crate::memory::Memory;
 use rand::Rng;
-use std::convert::TryFrom;
-use std::ops::{Index, IndexMut};
+use core::convert::TryFrom;
+use core::ops::{Index, IndexMut};
+use alloc::vec::Vec;
 
 /// Type of a general purpose register in the VM
 type VRegisterValue = u8;
@@ -76,6 +77,7 @@ pub struct VM<R: Rng> {
     display: Display,
 }
 
+#[cfg(feature = "std")]
 impl Default for VM<rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
     #[must_use]
@@ -671,7 +673,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_random() -> crate::errors::Result<()> {
-        let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
+        let rng = rand::rngs::mock::StepRng::new(0b1000_0000, 0);
         let mut vm = VM::new(rng, |_, _| Ok(()));
         vm.registers[V0] = 0x00;
 

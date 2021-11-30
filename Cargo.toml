@@ -13,13 +13,23 @@ keywords = ["chip-8", "chip8"]
 categories = ["emulators", "parser-implementations"]
 build = "build.rs"
 include = ["src/**/*", "README.md", "LICENSE-*", "COPYRIGHT", "build.rs"]
+resolver = "2"
+
+[features]
+default = [
+    "std",
+]
+std = [
+    "rand/std",
+    "rand/std_rng",
+    "thiserror",
+]
 
 [dependencies]
-thiserror = "1.0.18"
-rand = "0.7.3"
+thiserror = { version = "1.0.30", optional = true }
+rand = { version = "0.8.4", default-features = false }
 
 [dev-dependencies]
-bufrng = "1.0.2"
 version-sync = "0.9"
 skeptic = "0.13"
 proptest = "0.10.0"

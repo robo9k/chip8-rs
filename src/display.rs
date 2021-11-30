@@ -1,5 +1,7 @@
 //! Display
 
+use alloc::vec::Vec;
+
 /// Monochrome pixel
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Pixel {
@@ -15,7 +17,7 @@ impl Default for Pixel {
     }
 }
 
-impl std::ops::BitXorAssign for Pixel {
+impl core::ops::BitXorAssign for Pixel {
     fn bitxor_assign(&mut self, rhs: Self) {
         *self = match self {
             Self::Off => match rhs {
@@ -30,8 +32,8 @@ impl std::ops::BitXorAssign for Pixel {
     }
 }
 
-impl std::fmt::Display for Pixel {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for Pixel {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         match self {
             Self::Off => write!(f, "░"),
             Self::On => write!(f, "▓"),
@@ -180,8 +182,8 @@ impl From<u8> for SpriteRow {
     }
 }
 
-impl std::fmt::Display for SpriteRow {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for SpriteRow {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         for pixel in &self.0 {
             write!(f, "{}", pixel)?;
         }
@@ -207,8 +209,8 @@ impl From<&[u8]> for Sprite {
     }
 }
 
-impl std::fmt::Display for Sprite {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for Sprite {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         for row in &self.rows {
             writeln!(f, "{}", row)?;
         }
