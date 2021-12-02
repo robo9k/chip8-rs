@@ -21,7 +21,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg_hide))]
 #![cfg_attr(docsrs, doc(cfg_hide(docsrs)))]
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
-#![doc(html_root_url = "https://docs.rs/chip_8/0.3.0")]
+#![doc(html_root_url = "https://docs.rs/chip_8/0.3.1")]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
 

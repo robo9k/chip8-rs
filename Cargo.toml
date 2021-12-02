@@ -1,6 +1,6 @@
 [package]
 name = "chip_8"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["robo9k <robo9k@symlink.io>"]
 edition = "2018"
 description = """
