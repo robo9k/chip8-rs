@@ -1,7 +1,7 @@
 //! Machine language and byte code instructions
 
 use crate::errors::Chip8Error;
-use std::convert::TryFrom;
+use core::convert::TryFrom;
 
 /// General purpose register
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -113,7 +113,7 @@ impl Iterator for VRegisterRangeIter {
 
 impl VRegister {
     /// Returns an `Iterator` from `V0` up to including `upper_bound`
-    // NOTE: This could be implemented much nicer with `std::iter::Step`
+    // NOTE: This could be implemented much nicer with `core::iter::Step`
     pub fn iter_to(upper_bound: VRegister) -> impl Iterator<Item = VRegister> {
         VRegisterRangeIter {
             next: Some(Self::V0),

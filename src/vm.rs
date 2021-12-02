@@ -4,9 +4,10 @@ use crate::display::{Display, DrawResult, XCoordinate, YCoordinate};
 use crate::instructions::{Addr, Instruction, VRegister};
 use crate::keypad::{Key, KeyState};
 use crate::memory::Memory;
+use alloc::vec::Vec;
+use core::convert::TryFrom;
+use core::ops::{Index, IndexMut};
 use rand::Rng;
-use std::convert::TryFrom;
-use std::ops::{Index, IndexMut};
 
 /// Type of a general purpose register in the VM
 type VRegisterValue = u8;
@@ -76,6 +77,7 @@ pub struct VM<R: Rng> {
     display: Display,
 }
 
+#[cfg(feature = "std")]
 impl Default for VM<rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
     #[must_use]
@@ -284,6 +286,11 @@ mod tests {
     use crate::instructions::{Instruction::*, VRegister::*};
     use crate::keypad::{Key::*, KeyState::*};
 
+    fn test_vm_default() -> VM<rand::rngs::mock::StepRng> {
+        let rng = rand::rngs::mock::StepRng::new(4, 0);
+        VM::new(rng, |_, _| Ok(()))
+    }
+
     #[test]
     fn vregisters_set_get() {
         let mut registers = Registers::new();
@@ -305,7 +312,7 @@ mod tests {
         ) => {
             #[test]
             fn $test_name() -> crate::errors::Result<()> {
-                let mut vm = $crate::vm::VM::default();
+                let mut vm = test_vm_default();
                 $(
                   vm.registers[$register_before] = $register_before_value;
                 )+
@@ -337,6 +344,7 @@ mod tests {
         };
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn vm_execute_instruction_sys_default() -> crate::errors::Result<()> {
         let mut vm = VM::default();
@@ -367,7 +375,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_jump() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0;
 
         vm.execute_instruction(&Instruction::Jump(0x0FFF.into()))?;
@@ -378,7 +386,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipequaloperand() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
@@ -390,7 +398,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipnotequaloperand() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
 
@@ -402,7 +410,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipequal() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xFF;
@@ -586,7 +594,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipnotequal() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0;
         vm.registers[V0] = 0xFF;
         vm.registers[VF] = 0xEE;
@@ -599,7 +607,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadi() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.i = 0xF0F0;
 
         vm.execute_instruction(&LoadI(0x0AAA.into()))?;
@@ -610,7 +618,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_longjump() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0111;
         vm.registers[V0] = 0x11;
 
@@ -622,7 +630,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipkeypressed() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0111;
         vm.registers[V6] = 0x4;
         vm.keypad[Key4] = Pressed;
@@ -635,7 +643,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_skipkeynotpressed() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.pc = 0x0111;
         vm.registers[V6] = 0x4;
         vm.keypad[Key4] = NotPressed;
@@ -648,7 +656,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadkey() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.waiting_on_any_keypress = None;
 
         vm.execute_instruction(&LoadKey(V6))?;
@@ -659,7 +667,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_addi() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 0x1;
         vm.registers.i = 0x0AAA;
 
@@ -671,7 +679,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_random() -> crate::errors::Result<()> {
-        let rng = bufrng::BufRng::new(&[0, 0, 0, 0b1000_0000]);
+        let rng = rand::rngs::mock::StepRng::new(0b1000_0000, 0);
         let mut vm = VM::new(rng, |_, _| Ok(()));
         vm.registers[V0] = 0x00;
 
@@ -683,7 +691,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_draw() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 0xF;
         vm.registers[V1] = 0x0;
         vm.registers.i = 0x0111;
@@ -702,7 +710,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadsprite() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 0xF;
 
         vm.execute_instruction(&Instruction::LoadSprite(V0))?;
@@ -724,7 +732,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadbinarycodeddecimal() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 123;
         vm.registers.i = 0x0111;
 
@@ -738,7 +746,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadmemoryregisters_all() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 0x0;
         vm.registers[V1] = 0x1;
         vm.registers[V2] = 0x2;
@@ -781,7 +789,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadmemoryregisters_one() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers[V0] = 0xAA;
         vm.registers[V1] = 0xBB;
         vm.registers.i = 0x0111;
@@ -796,7 +804,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadregistersmemory_all() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.i = 0x0111;
         vm.memory.write((0x0111 + 0x0).into(), 0x0);
         vm.memory.write((0x0111 + 0x1).into(), 0x1);
@@ -839,7 +847,7 @@ mod tests {
 
     #[test]
     fn vm_execute_instruction_loadregistersmemory_one() -> crate::errors::Result<()> {
-        let mut vm = VM::default();
+        let mut vm = test_vm_default();
         vm.registers.i = 0x0111;
         vm.memory.write((0x0111 + 0x0).into(), 0x0);
         vm.memory.write((0x0111 + 0x1).into(), 0x1);

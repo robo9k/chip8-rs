@@ -1,8 +1,8 @@
 //! Keys and keypad
 
 use crate::errors::Chip8Error;
-use std::convert::TryFrom;
-use std::ops::{Index, IndexMut};
+use core::convert::TryFrom;
+use core::ops::{Index, IndexMut};
 
 /// Possible state for each key
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
