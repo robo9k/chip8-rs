@@ -4,6 +4,10 @@
 use thiserror::Error;
 
 /// Error type for all errors in this crate
+///
+/// # Features
+///
+/// Feature `std` adds an `impl std::error::Error`.
 #[derive(Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "std", derive(Error))]
 pub enum Chip8Error {

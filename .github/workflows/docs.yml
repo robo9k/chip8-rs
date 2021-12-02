@@ -26,7 +26,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --verbose --no-deps --all-features
+          args: --verbose --lib --no-deps --all-features
+        env:
+          RUSTFLAGS: --cfg docsrs
+          RUSTDOCFLAGS: --cfg docsrs -Dwarnings
 
       - name: finalize docs
         run: |
