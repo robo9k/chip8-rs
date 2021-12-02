@@ -1,0 +1,12 @@
+# configuration for https://crates.io/crates/cargo-release
+
+allow-branch = [ "main" ]
+pre-release-commit-message = "Version {{version}}"
+tag-message = "Version {{version}}"
+dev-version = false
+enable-all-features = true
+pre-release-hook = ["cargo", "test"]
+pre-release-replacements = [
+  { file="README.md", search="chip_8 = \".+\"", replace="chip_8 = \"{{version}}\"", exactly=1 },
+  { file="src/lib.rs", search="#!\\[doc\\(html_root_url = \"https://docs.rs/chip_8/.+\"\\)]", replace="#![doc(html_root_url = \"https://docs.rs/chip_8/{{version}}\")]", exactly=1 }, 
+]
