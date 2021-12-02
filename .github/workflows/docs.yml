@@ -30,7 +30,7 @@ jobs:
 
       - name: finalize docs
         run: |
-          CRATE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]' | cut -f2 -d"/")
+          CRATE_NAME='chip_8'
           echo "<meta http-equiv=\"refresh\" content=\"0; url=${CRATE_NAME/-/_}\">" > target/doc/index.html
           touch target/doc/.nojekyll
 
@@ -41,8 +41,7 @@ jobs:
           path: target/doc
 
       - name: deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
-          ACCESS_TOKEN: ${{ secrets.GH_PAT }}
           BRANCH: gh-pages
           FOLDER: target/doc
