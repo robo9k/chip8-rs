@@ -77,6 +77,7 @@ pub struct VM<R: Rng> {
     display: Display,
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 #[cfg(feature = "std")]
 impl Default for VM<rand::rngs::ThreadRng> {
     /// Creates a new instance with thread-local random number generator
