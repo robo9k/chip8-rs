@@ -861,6 +861,7 @@
 <span id="860">860</span>
 <span id="861">861</span>
 <span id="862">862</span>
+<span id="863">863</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Virtual machine</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::display</span>::{<span class="ident">Display</span>, <span class="ident">DrawResult</span>, <span class="ident">XCoordinate</span>, <span class="ident">YCoordinate</span>};
@@ -940,6 +941,7 @@
     <span class="ident">display</span>: <span class="ident">Display</span>,
 }
 
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)))]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">VM</span><span class="op">&lt;</span><span class="ident">rand::rngs::ThreadRng</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new instance with thread-local random number generator</span>

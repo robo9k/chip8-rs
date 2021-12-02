@@ -24,8 +24,48 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Virtual machine for the CHIP-8 programming language</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Features</span>
+<span class="doccomment">//! This crate uses [Cargo &quot;features&quot;](https://doc.rust-lang.org/cargo/reference/features.html#the-features-section) for conditional compilation.</span>
+<span class="doccomment">//! - `std`: Enables usage of [Rust&#39;s standard library `std`](https://doc.rust-lang.org/std/)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Functionality affected by features should have a `rustdoc` hint in this documentation, e.g.:</span>
+<span class="doccomment">//! &gt; This is supported on **crate feature `std`** only.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! If this is not possible for technical reasons there should be a &quot;Features&quot; heading describing the details instead.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Feature `std`</span>
+<span class="doccomment">//! This crate is [`no_std`](https://github.com/rust-lang/rfcs/blob/master/text/1184-stabilize-no_std.md) compatible if you disable this feature.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This is a [default feature](https://doc.rust-lang.org/cargo/reference/features.html#the-default-feature) and can be disabled with `default-features = false` in your `chip_8` [dependency declaration](https://doc.rust-lang.org/cargo/reference/features.html#dependency-features).</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Even if disabled this crate still requires the [Rust core allocation and collections library `alloc`](https://doc.rust-lang.org/alloc/), i.e. a global allocator.</span>
+<span class="doccomment">//!</span>
 
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg_hide</span>))]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg_hide</span>(<span class="ident">docsrs</span>)))]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)), <span class="ident">no_std</span>)]</span>
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/chip_8/0.3.0&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
