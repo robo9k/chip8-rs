@@ -4,10 +4,10 @@ use crate::display::{Display, DrawResult, XCoordinate, YCoordinate};
 use crate::instructions::{Addr, Instruction, VRegister};
 use crate::keypad::{Key, KeyState};
 use crate::memory::Memory;
-use rand::Rng;
+use alloc::vec::Vec;
 use core::convert::TryFrom;
 use core::ops::{Index, IndexMut};
-use alloc::vec::Vec;
+use rand::Rng;
 
 /// Type of a general purpose register in the VM
 type VRegisterValue = u8;
