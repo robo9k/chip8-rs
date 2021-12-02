@@ -11,8 +11,7 @@ repository = "https://github.com/robo9k/chip8-rs"
 license = "MIT OR Apache-2.0"
 keywords = ["chip-8", "chip8"]
 categories = ["emulators", "parser-implementations"]
-build = "build.rs"
-include = ["src/**/*", "README.md", "LICENSE-*", "COPYRIGHT", "build.rs"]
+include = ["src/**/*", "README.md", "LICENSE-*", "COPYRIGHT"]
 resolver = "2"
 
 [features]
@@ -31,11 +30,7 @@ rand = { version = "0.8.4", default-features = false }
 
 [dev-dependencies]
 version-sync = "0.9"
-skeptic = "0.13"
 proptest = "0.10.0"
-
-[build-dependencies]
-skeptic = "0.13"
 
 [badges]
 codecov = { repository = "robo9k/chip8-rs" }
