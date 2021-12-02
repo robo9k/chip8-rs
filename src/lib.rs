@@ -1,7 +1,7 @@
 //! Virtual machine for the CHIP-8 programming language
 
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
-#![doc(html_root_url = "https://docs.rs/chip_8/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/chip_8/0.3.0")]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
 
