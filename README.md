@@ -7,9 +7,9 @@
 [![ci build status](https://github.com/robo9k/chip8-rs/workflows/test/badge.svg)](https://github.com/robo9k/chip8-rs/actions?query=workflow%3Atest)
 [![crate version](https://img.shields.io/crates/v/chip_8)](https://crates.io/crates/chip_8)
 [![docs](https://docs.rs/chip_8/badge.svg)](https://docs.rs/chip_8)
-[![crate license](https://img.shields.io/crates/l/chip_8)](https://github.com/robo9k/chip8-rs/blob/master/COPYRIGHT)
+[![crate license](https://img.shields.io/crates/l/chip_8)](https://github.com/robo9k/chip8-rs/blob/main/COPYRIGHT)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
-[![codecov](https://codecov.io/gh/robo9k/chip8-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/robo9k/chip8-rs)
+[![codecov](https://codecov.io/gh/robo9k/chip8-rs/branch/main/graph/badge.svg)](https://codecov.io/gh/robo9k/chip8-rs)
 
 ## Example
 
